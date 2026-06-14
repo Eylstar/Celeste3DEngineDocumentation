@@ -4,10 +4,7 @@ const SITE = {
     nameAccent: "3D",
     name2: "Engine",
     version: "v0.4.0",
-    base:  (() => {
-        const parts = location.pathname.split("/")
-        return parts.length > 1 ? "/" + parts[1] : ""
-    })(),
+    base: ""
 }
 
 const NAV = [
@@ -25,7 +22,7 @@ const NAV = [
     {
         section: "ENGINE",
         items: [
-            { label: "EngineEntity", href: "/engine/EngineEntity.html" },
+            { label: "EngineEntity", href: "engine/EngineEntity.html" },
             { label: "Scene3D",     href: "scene.html" },
             { label: "EnginePaths",    href: "camera.html" },
             { label: "EngineCallbacks",    href: "camera.html" },
@@ -91,7 +88,8 @@ const NAV = [
 
 
 function currentPage() {
-    return location.pathname
+    const base = document.querySelector("base")?.getAttribute("href") || "/"
+    return location.pathname.replace(base, "")
 }
 
 
