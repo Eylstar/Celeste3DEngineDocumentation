@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClassTemplate</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header></header>
+
+    <div class="layout">
+        <aside></aside>
+        <main>
+            <h1>ClassTemplate</h1>
+
+            <div class="page-meta">
+                <span class="tag"> Class </span>
+                <span class="tag"> Inherits from <a href="">AnotherClass</a> </span>
+            </div>
+
+            <p>This is the <code>Class</code> description</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Usage Exemple</span>
+                    <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+                </div>
+                <pre>
+<span class="cm">// Comment</span>
+Some code;</pre>
+            </div>
+
+            <hr class="divider">
+
+            <h2> Properties </h2>
+            <table class="prop-table">
+                <thead>
+                <tr>
+                    <th>Property</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><span class="prop-name">name</span></td>
+                    <td><span class="prop-type">type</span></td>
+                    <td>Property Description</td>
+                </tr>
+                </tbody>
+            </table>
+
+
+            <h2> Methods </h2>
+            <table class="prop-table">
+                <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Return type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><span class="prop-name">name</span></td>
+                    <td><span class="prop-type">void</span></td>
+                    <td>Method Description</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <h2> Constructors </h2>
+            <table class="prop-table">
+                <thead>
+                <tr>
+                    <th>Declaration</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><span class="prop-name">Class()</span></td>
+                    <td>Default Constructor</td>
+                </tr>
+                </tbody>
+            </table>
+
+        </main>
+    </div>
+
+    <script src="/nav.js"></script>
+</body>
+</html>

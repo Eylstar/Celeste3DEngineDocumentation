@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C3DE - EngineEntity</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header></header>
+
+    <div class="layout">
+        <aside></aside>
+        <main>
+            <h1>EngineEntity</h1>
+
+            <div class="page-meta">
+                <span class="tag"> Class </span>
+                <span class="tag"> Inherits from <a href="">Monocle.Entity</a> </span>
+            </div>
+
+            <p>The <code>EngineEntity</code> class is the one who will load the whole Engine. It represents the bridge beetween the Celeste/Monocle pipeline and this one and it's a Celeste Entity, placeable in Lönn. Having this Entity placed in a room will allow you to use the 3D Engine.
+            <br>
+            <p>The <code>EngineEntity</code> class handles the 3D scenes loading and unloading. Once the <code>EngineEntity</code> finishes to load his core data, it will call an <code>OnEngineLoad</code> event.
+            Use it to start loading your mod content and code, and to create your main 3D Scene.
+
+            <br><br>To load a <code>Scene3D</code> create it first, then pass it to <code>EngineEntity.LoadScene</code>. It will automatrically unload the previous loaded <code>Scene3D</code> if there was any.</p>
+
+            <div class="callout info">
+                <div>Multiple <code>3DScene</code> can be created, setuped and stored as variables in your code.
+                    This can be useful to manage for exemple mutliple rooms by loading each scene when transitionning.</div>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Scene loading and unloading</span>
+                    <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+                </div>
+                <pre>
+<span class="cm">// Engine Event Subscription</span>
+public MyCustomModBuilder(EntityData data, Vector2 offset) : base(data.Position + offset)
+{
+    EngineEntity.OnEngineLoad += CreateMainScene;
+}
+
+void CreateMainScene(EngineEntity entity, Scene celesteScene)
+{
+    <span class="cm">// Mod content loading | Scene creation</span>
+    Scene3D myscene = new Scene3D();
+    ---
+
+    <span class="cm">// Load the Scene in the EngineEntity</span>
+    EngineEntity.LoadScene(myscene);
+}</pre>
+            </div>
+
+
+            <p><br>By default, the engine should not be persistent across rooms, since it relies on a Celeste Entity to work. To solve this, the <code>EngineEntity</code> contains a workflow to save and load itself its state across rooms and celeste levels quit/reload. <br>Persistent state is at <code>true</code> by default, you can change it with <code>SetPersistence</code>.
+
+            <hr class="divider">
+
+            <h2> Methods </h2>
+            <table class="prop-table">
+                <thead>
+                <tr>
+                    <th>Method</th>
+                    <th>Return Type</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><span class="prop-name">LoadScene</span></td>
+                    <td><span class="prop-type">static void</span></td>
+                    <td>Loads a new 3D scene, unloading the previous one if it exists</td>
+                </tr>
+                <tr>
+                    <td><span class="prop-name">UnloadCurrentScene</span></td>
+                    <td><span class="prop-type">static void</span></td>
+                    <td>Unloads the current active 3D scene</td>
+                </tr>
+                <tr>
+                    <td><span class="prop-name">GetCurrentScene</span></td>
+                    <td><span class="prop-type">static Scene3D</span></td>
+                    <td>Gets the current active 3D scene</td>
+                </tr>
+                <tr>
+                    <td><span class="prop-name">SetPersistence</span></td>
+                    <td><span class="prop-type">static void</span></td>
+                    <td>Sets whether the EngineEntity should persist across rooms</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <h2> Events </h2>
+            <table class="prop-table">
+                <thead>
+                <tr>
+                    <th>Declaration</th>
+                    <th>Parameters Passed</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><span class="prop-name">OnEngineLoad</span></td>
+                    <td><span class="prop-type">EngineEntity, Scene</span></td>
+                    <td>Default Constructor</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <hr class="divider">
+
+            <div class="callout warn">
+                <div>Since <code>3DScene</code> inherits from <code>Monocle.Entity</code>, it also inherits forced public methods such as its constructor and methods like <code>Added</code>, <code>Update</code> etc. Don't use them unless you're absolutely sure what you're doing.</div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/nav.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

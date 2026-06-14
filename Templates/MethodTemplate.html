@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MethodTemplate</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header></header>
+
+    <div class="layout">
+        <aside></aside>
+        <main>
+            <h1><span><a href="">Class</a></span>.Method</h1>
+
+            <div class="page-meta">
+                <span class="tag"> Method </span>
+            </div>
+
+            <p>This is the <code>Method</code> description</p>
+
+            <h2>Declaration</h2>
+            <p>public void <b>Method()</b>;</p>
+
+            <br><p>Details on this declaration.</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Usage Exemple</span>
+                    <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+                </div>
+                <pre>
+<span class="cm">// How to use</span>
+Exemple code here;</pre>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="/nav.js"></script>
+</body>
+</html>

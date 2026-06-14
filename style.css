@@ -4,16 +4,17 @@
     --bg-card:   #1c2230;
     --border:    #2a3245;
     --accent:    #4f8ef7;
+    --berry : #f44336;
     --accent-dim:#1e3a6e;
-    --text:      #c9d1e0;
-    --text-dim:  #6b7a99;
+    --text: #e4e7ec;
+    --text-dim: #8999bc;
     --text-head: #eaf0ff;
     --green:     #3dd68c;
     --amber:     #f0b429;
     --code-bg:   #0d1117;
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-    --sidebar-w: 260px;
-    --header-h:  52px;
+    --sidebar-w: 290px;
+    --header-h:  80px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -32,17 +33,17 @@ header {
     height: var(--header-h);
     background: var(--bg-panel);
     border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; padding: 0 24px; gap: 16px;
+    display: flex; align-items: center; padding: 0 24px; gap: 20px;
 }
 
 .logo {
-    font-size: 15px; font-weight: 700; color: var(--text-head);
+    font-size: 30px; font-weight: 700; color: var(--text-head);
     letter-spacing: -.3px; white-space: nowrap;
 }
-.logo span { color: var(--accent); }
+.logo span { color: var(--berry); }
 
 .version-badge {
-    font-size: 11px; font-family: var(--font-mono);
+    font-size: 15px; font-family: var(--font-mono);
     background: var(--accent-dim); color: var(--accent);
     padding: 2px 8px; border-radius: 4px; border: 1px solid var(--accent-dim);
 }
@@ -76,7 +77,7 @@ aside {
     overflow-y: auto; overflow-x: hidden;
     background: var(--bg-panel);
     border-right: 1px solid var(--border);
-    padding: 20px 0 40px;
+    padding: 20px 5px 40px;
 }
 
 aside::-webkit-scrollbar { width: 4px; }
@@ -86,19 +87,19 @@ aside::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; 
 .nav-section { margin-bottom: 4px; }
 
 .nav-section-title {
-    font-size: 11px; font-weight: 600; letter-spacing: .08em;
+    font-size: 12px; font-weight: 800; letter-spacing: .08em;
     text-transform: uppercase; color: var(--text-dim);
-    padding: 12px 20px 6px;
+    padding: 23px 20px 6px;
 }
 
 .nav-item {
-    display: block; padding: 5px 20px 5px 28px;
-    font-size: 13.5px; color: var(--text-dim);
+    display: block; padding: 3px 20px 5px 28px;
+    font-size: 13px; color: var(--text-dim);
     text-decoration: none; border-left: 2px solid transparent;
     transition: color .15s, border-color .15s, background .15s;
     cursor: pointer;
 }
-.nav-item:hover { color: var(--text); background: rgba(79,142,247,.06); }
+.nav-item:hover { color: var(--text); background: rgba(79,142,247,.06); text-decoration: none}
 .nav-item.active {
     color: var(--accent); border-left-color: var(--accent);
     background: rgba(79,142,247,.08);

@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Title</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+    </header>
+
+    <div class="layout">
+        <aside></aside>
+
+        <main>
+
+            <div class="callout info">
+                <div>Un <code>SceneNode</code> seul ne se dessine pas. C'est un conteneur de transformation et de composants. Attache un <code>MeshComponent</code> pour le rendre visible.</div>
+            </div>
+
+            <div class="callout warn">
+                <div>Un <code>SceneNode</code> seul ne se dessine pas. C'est un conteneur de transformation et de composants. Attache un <code>MeshComponent</code> pour le rendre visible.</div>
+            </div>
+
+            <div class="callout tip">
+                <div>Un <code>SceneNode</code> seul ne se dessine pas. C'est un conteneur de transformation et de composants. Attache un <code>MeshComponent</code> pour le rendre visible.</div>
+            </div>
+
+            <hr class="divider">
+
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span class="code-lang">Creation Exemple</span>
+                    <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+                </div>
+                <pre>
+<span class="cm">// Créer un nœud simple</span>
+<span class="cl">SceneNode</span>* node = scene.<span class="fn">createNode</span>(<span class="st">"MonObjet"</span>);
+
+<span class="cm">// Positionner dans la scène</span>
+node->transform.<span class="fn">setPosition</span>(<span class="cl">Vec3</span>(<span class="nb">0.0f</span>, <span class="nb">1.0f</span>, <span class="nb">-5.0f</span>));
+node->transform.<span class="fn">setScale</span>(<span class="cl">Vec3</span>(<span class="nb">2.0f</span>));
+
+<span class="cm">// Attacher un mesh</span>
+<span class="kw">auto</span>* mesh = node-><span class="fn">addComponent</span>&lt;<span class="cl">MeshComponent</span>&gt;();
+mesh-><span class="fn">loadFromFile</span>(<span class="st">"assets/cube.obj"</span>);</pre>
+            </div>
+
+            <div class="img-block">
+                <img src="" alt="Scene Graph Example">
+            </div>
+            <div class="img-caption">Exemple en image I guess</div>
+
+        </main>
+    </div>
+
+    <script src="/nav.js"></script>
+</body>
+</html>

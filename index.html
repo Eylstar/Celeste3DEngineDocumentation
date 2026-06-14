@@ -4,129 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Title</title>
-    <link rel="stylesheet" href="style.css">
+    <title>C3DE - HomePage</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+<header></header>
 
-    <header>
-        <div class="logo">Celeste<span>3D</span>Engine</div>
-        <div class="version-badge">v0.3.0</div>
-        <div class="header-search">
-            Search in the Documentation
-        </div>
-    </header>
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>Celeste 3D Engine official Documentation</h1>
 
-    <div class="layout">
-        <aside></aside>
+    </main>
+</div>
 
-        <main>
-            <div class="breadcrumb"></div>
-
-            <h1>Test</h1>
-            <div class="page-meta">
-                <span class="tag"> Class </span>
-                <span class="tag"> Inherits from <a href="test.html">Test</a> </span>
-            </div>
-
-            <p>Un <code>Test</code> est l'unité de base du graphe de scène. Chaque objet visible ou logique dans la scène — mesh, lumière, caméra, trigger — est un nœud. </p>
-
-            <div class="callout info">
-                <div>Un <code>SceneNode</code> seul ne se dessine pas. C'est un conteneur de transformation et de composants. Attache un <code>MeshComponent</code> pour le rendre visible.</div>
-            </div>
-
-            <div class="callout warn">
-                <div>Un <code>SceneNode</code> seul ne se dessine pas. C'est un conteneur de transformation et de composants. Attache un <code>MeshComponent</code> pour le rendre visible.</div>
-            </div>
-
-            <div class="callout tip">
-                <div>Un <code>SceneNode</code> seul ne se dessine pas. C'est un conteneur de transformation et de composants. Attache un <code>MeshComponent</code> pour le rendre visible.</div>
-            </div>
-
-            <hr class="divider">
-
-            <h2> Properties </h2>
-
-            <table class="prop-table">
-                <thead>
-                    <tr>
-                        <th>Property</th>
-                        <th>Type</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><span class="prop-name">name</span></td>
-                        <td><span class="prop-type">string</span></td>
-                        <td>This is a descriptive text I guess</td>
-                    </tr>
-                    <tr>
-                        <td><span class="prop-name">name</span></td>
-                        <td><span class="prop-type">string</span></td>
-                        <td>This is a descriptive text I guess</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h2> Public Methods </h2>
-
-            <table class="prop-table">
-                <thead>
-                <tr>
-                    <th>Property</th>
-                    <th>Type</th>
-                    <th>Description</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td><span class="prop-name">name</span></td>
-                    <td><span class="prop-type">string</span></td>
-                    <td>This is a descriptive text I guess</td>
-                </tr>
-                <tr>
-                    <td><span class="prop-name">name</span></td>
-                    <td><span class="prop-type">string</span></td>
-                    <td>This is a descriptive text I guess</td>
-                </tr>
-                </tbody>
-            </table>
-
-            <hr class="divider">
-
-            <h2> Initialization </h2>
-            <p>
-                Les nœuds sont créés et gérés par la <code>Scene</code>. Ne les instancie jamais directement avec <code>new</code> — utilise <code>scene.createNode()</code> pour que le cycle de vie soit géré correctement.
-            </p>
-
-            <div class="code-block">
-                <div class="code-header">
-                    <span class="code-lang">Creation Exemple</span>
-                    <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
-                </div>
-                <pre>
-<span class="cm">// Créer un nœud simple</span>
-<span class="cl">SceneNode</span>* node = scene.<span class="fn">createNode</span>(<span class="st">"MonObjet"</span>);
-
-<span class="cm">// Positionner dans la scène</span>
-node->transform.<span class="fn">setPosition</span>(<span class="cl">Vec3</span>(<span class="nb">0.0f</span>, <span class="nb">1.0f</span>, <span class="nb">-5.0f</span>));
-node->transform.<span class="fn">setScale</span>(<span class="cl">Vec3</span>(<span class="nb">2.0f</span>));
-
-<span class="cm">// Attacher un mesh</span>
-<span class="kw">auto</span>* mesh = node-><span class="fn">addComponent</span>&lt;<span class="cl">MeshComponent</span>&gt;();
-mesh-><span class="fn">loadFromFile</span>(<span class="st">"assets/cube.obj"</span>);</pre>
-            </div>
-
-            <p>Tu peux traverser la hiérarchie avec <code>findChild()</code>. La recherche est récursive par défaut.</p>
-
-            <div class="img-block">
-                <img src="map.png" alt="Scene Graph Example">
-            </div>
-            <div class="img-caption">Exemple en image I guess</div>
-
-        </main>
-    </div>
-
+<script src="/nav.js"></script>
 </body>
 </html>
