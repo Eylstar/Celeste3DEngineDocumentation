@@ -26,6 +26,7 @@
             <br>
             <p>The <code>EngineEntity</code> class handles the 3D scenes loading and unloading. Once the <code>EngineEntity</code> finishes to load his core data, it will call an <code>OnEngineLoad</code> event.
             Use it to start loading your mod content and code, and to create your main 3D Scene.
+            <br> Also, don't forget to Unsubscribe from the event, with <code>Removed</code> and <code>SceneEnd</code>.
 
             <br><br>To load a <code>Scene3D</code> create it first, then pass it to <code>EngineEntity.LoadScene</code>. It will automatrically unload the previous loaded <code>Scene3D</code> if there was any.</p>
 
@@ -108,7 +109,7 @@ void CreateMainScene(EngineEntity entity, Scene celesteScene)
                 <tr>
                     <td><span class="prop-name">OnEngineLoad</span></td>
                     <td><span class="prop-type">EngineEntity, Scene</span></td>
-                    <td>Default Constructor</td>
+                    <td>Event invoked when the EngineEntity is added to a scene. Passes with it itself and the Celeste Scene</td>
                 </tr>
                 </tbody>
             </table>
@@ -116,7 +117,7 @@ void CreateMainScene(EngineEntity entity, Scene celesteScene)
             <hr class="divider">
 
             <div class="callout warn">
-                <div>Since <code>3DScene</code> inherits from <code>Monocle.Entity</code>, it also inherits forced public methods such as its constructor and methods like <code>Added</code>, <code>Update</code> etc. Don't use them unless you're absolutely sure what you're doing.</div>
+                <div>Since <code>Scene3D</code> inherits from <code>Monocle.Entity</code>, it also inherits forced public methods such as its constructor and methods like <code>Added</code>, <code>Update</code> etc. Don't use them unless you're absolutely sure what you're doing.</div>
             </div>
 
         </main>

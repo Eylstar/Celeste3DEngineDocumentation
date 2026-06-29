@@ -1,0 +1,290 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scene3D</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>Scene3D</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Class </span>
+        </div>
+
+        <p>The <code>Scene3D</code> class represents your classical 3D Engine Game Scene. Multiple instances of a <code>Scene3D</code>
+        can be created and loaded at the same time from your mod, but only one can be loaded and used by the <code>EngineEntity.</code>
+
+
+        <br><br>Each <code>Scene3D</code> contains its own elements and settings and these are only applied for this scene. The <code>Scene3D</code>
+        is made of a list of <code>GameObject</code>, one <code>Renderer3D</code> and <code>Camera3D</code> that handles the
+        3D rendering, one togglable <code>Skybox</code>, one default <code>AudioListener</code>, an internal <code>CollisionSystem</code>, and its own <code>LightingSettings</code>.
+
+        <br><br> In each scene, you can Add or Remove <code>GameObject</code> with custom code logic, place decoration elements, some <code>Light</code> or use it as a background for your Celeste Gameplay.</p>
+
+        <div class="callout info">
+            <div>You can see the <code>Scene3D</code> as the object that will hold and render all your 3D models and sprites.</div>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Scene Core logic loops</h2>
+
+        <h3>Load</h3>
+
+        When <code>LoadScene</code> is called on the <code>EngineEntity</code>, the scene initialization starts. <br><br> During this, the <code>Scene3D</code>
+            starts by creating a default <code>Camera3D</code> and sets it to be the Rendering one if none was created and set before. You can create yourself
+            your own <code>Camera3D</code> and set it in the scene with <code>SetMainCamera()</code> before or after the scene loading. <br>
+        The <code>Scene3D</code> also places and set its Skybox with the default sky Texture and initialize its <code>CollisionSystem</code> and <code>Renderer3D</code>.</p>
+
+        <div class="callout info">
+            <div><code>Skybox.Destroy()</code> is disabled by default. If you don't want to use a Skybox, use <code>EnableSkybox(false)</code> directly in your scene.</div>
+        </div>
+
+        <p>Then, the Scene3D will call the <code>OnSceneLoad</code> event, that you can use to invoke code at this precise moment. And finally,
+        <code>Start()</code> will be called on every <code>GameObject</code> that was added before the scene was loaded.</p>
+
+        <div class="callout warn">
+            <div>Note that the <code>Behaviour</code> functions <code>Added()</code> will be called at the exact moment the object is added, even if it's before the scene load.
+            <code>Start()</code> will only be called after the Scene loading and <code>OnSceneLoad</code> event call, ensuring most of the <code>Scene3D</code> core references are initialized
+                and not null. More information in the <code>GameObject</code> and <code>Behaviour</code> pages.</div>
+        </div>
+
+        <h3>Update</h3>
+
+        <p>The scene's <code>Update()</code> function is called by the <code>EngineEntity</code> at the exact same rate than the core Monocle/Celeste update tick rate.
+            (since <code>EngineEntity</code> is a Celeste Entity).
+
+            <br><br>At the start of every <code>Update()</code> loop, <code>Start()</code> will be called on every <code>GameObject</code> that was added during the previous frame.
+            Then <code>Update()</code> is called on every <code>GameObject</code> present in the scene, and the <code>AudioListener</code> position is updated.
+        <br>The <code>Renderer3D</code> will process every <code>Model3D</code> information, and store the result in the appropriate <code>RenderTarget2D</code> for later rendering.
+        </p>
+
+
+        <p>And to finish the Update cycle, the scene will resolve the collisions for every active <code>Collider3D</code> and <code>CollisionDetector</code>, and then clean up and remove every GameObject on which <code>Destroy()</code> was called.</p>
+
+        <h3>Render</h3>
+
+        <p>After the <code>Update()</code> loop finishes, a shorter one starts. <code>Render()</code> is called on every custom <code>Behaviour</code> in the scene.
+            <br> And then, if the debug option is enabled, the loaded <code>Collider3D</code> and <code>RayCast</code> will be drawn into the screen.
+
+        </p>
+
+        <div class="callout info">
+            <div>This loop is named render to follow Monocle/Celeste namings, even if here no real rendering is done. This loop is called
+                exactly when the Celeste entities <code>Render()</code> code is called. It's the same as Update, called at the Celeste tick rate from <code>EngineEntity</code>. <br> If you need to visually debug things or draw a sprite at the moment <code>Render()</code> would be called in a celeste entity, it can be useful, like for the
+                collider and raycast debug draws, since it will always be drawn over the 3D World (in Celeste Entity.Render is called after Level.Render)
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder">Finding Objects</h2>
+
+        <p>Just like in Unity and other Engines, there is some built-in functions for searching and getting a <code>GameObject</code> reference. <br> Each <code>GameObject</code> possess a name and a tag. Both are by default set as an empty string,
+        but you can change them with <code>GameObject.SetName()</code> and <code>GameObject.SetTag()</code>, or, for the name, specify it in the constructor when you create the object.
+            <br><br> You can find and filter objects using these names and tags. Also, if you want to search specifically for Objects with a known <code>Behaviour</code> attached to it, you can filter the search by Type. (Behaviour are components like <code>AnimationPlayer</code>
+            or any of you classes that inherits <code>Behaviour</code>).
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">GameObject Finding</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>Scene3D scene;
+
+<span class="cm">// Find the first object named "Player"</span>
+GameObject player = scene.FindFirstByName("Player");
+
+<span class="cm">// Find every object with the tag "Platform"</span>
+List&lt;GameObject&gt; platforms = scene.FindAllByTag("Platform");
+
+<span class="cm">// Find every object with that has the "EnemyMovement" script attached to</span>
+List&lt;GameObject&gt; movingEnemies = scene.FindAllByType&lt;EnemyMovement&gt;();
+            </pre>
+        </div>
+
+        <div class="callout info">
+            <div>Finding functions can be heavy, especially if called from <code>Update()</code> and in scenes with a lot of objects. Prefer storing objects references when creating them as much as possible.</div>
+        </div>
+
+        <hr class="divider">
+
+
+        <h2> Properties </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">debugShowColliders</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Decides if Colliders and Collision Detectors are shown (Wireframes)</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">debugShowRayCasts</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Decides if the RayCasts are shown in the scene (Lines and hitPoints)</td>
+            </tr>
+            </tbody>
+        </table>
+
+
+        <h2> Methods </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Method</th>
+                <th>Return type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">GetRenderingCamera</span></td>
+                <td><span class="prop-type">Camera3D</span></td>
+                <td>Returns the rendering camera of this scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">GetRenderer</span></td>
+                <td><span class="prop-type">Renderer3D</span></td>
+                <td>Returns the Renderer3D of this scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">GetLightingSettings</span></td>
+                <td><span class="prop-type">LightingSettings</span></td>
+                <td>Returns the LightingSettings used in the scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">GetGameObjectsList</span></td>
+                <td><span class="prop-type">IReadOnlyCollection&lt;GameObject&gt;</span></td>
+                <td>Returns a readOnly list of all GameObjects in the scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">AddGameObject</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Adds a GameObject to the scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">AddGameObjects</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Adds multiple GameObjects to the scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">AddHUDObject</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Adds a static HUD orthographic GameObject</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">SetMainCamera</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Sets the main rendering Camera for the scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">SetLightingSettings</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Sets the lighting settings for the scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">SetPause</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Pauses or unpauses the scene update and rendering</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">EnableSkybox</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Enables or disables the skybox rendering</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">ChangeSkyBox</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Change the Skybox Texture</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">ChangeAudioListenerObject</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Changes the GameObject that acts as the AudioListener for the scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">ResetAudioListenerToCamera</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Resets the AudioListener to follow the main rendering camera</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">FindFirstByName</span></td>
+                <td><span class="prop-type">GameObject</span></td>
+                <td>Finds the first GameObject in the scene with given name</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">FindAllByName</span></td>
+                <td><span class="prop-type">List&lt;GameObject&gt;</span></td>
+                <td>Finds all GameObjects in the scene with given name</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">FindFirstByTag</span></td>
+                <td><span class="prop-type">GameObject</span></td>
+                <td>Finds the first GameObject in the scene with given tag</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">FindAllByTag</span></td>
+                <td><span class="prop-type">List&lt;GameObject&gt;</span></td>
+                <td>Finds all GameObjects in the scene with given tag</td>
+            </tr>
+
+            <tr>
+                <td><span class="prop-name">FindFirstByType</span></td>
+                <td><span class="prop-type">GameObject</span></td>
+                <td>Finds the first GameObject in the scene that has a Behaviour of given Type</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">FindAllByType</span></td>
+                <td><span class="prop-type">List&lt;GameObject&gt;</span></td>
+                <td>Finds all GameObjects in the scene with a Behaviour of given Type</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h2> Events </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Declaration</th>
+                <th>Parameters Passed</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">OnSceneLoad</span></td>
+                <td><span class="prop-type">Scene3D</span></td>
+                <td>Event invoked when the Scene3D is loaded (after scene initialization)</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">OnSceneUnload</span></td>
+                <td><span class="prop-type">Scene3D</span></td>
+                <td>Event invoked when the Scene3D is unloaded (before scene wipe)</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

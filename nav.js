@@ -23,7 +23,7 @@ const NAV = [
         section: "ENGINE",
         items: [
             { label: "EngineEntity", href: "engine/EngineEntity.html" },
-            { label: "Scene3D",     href: "scene.html" },
+            { label: "Scene3D",     href: "engine/Scene3D.html" },
             { label: "EnginePaths",    href: "camera.html" },
             { label: "EngineCallbacks",    href: "camera.html" },
         ]
