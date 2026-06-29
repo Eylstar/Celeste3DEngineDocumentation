@@ -31,60 +31,42 @@
 
         <br><br> In each scene, you can Add or Remove <code>GameObject</code> with custom code logic, place decoration elements, some <code>Light</code> or use it as a background for your Celeste Gameplay.</p>
 
-        <div class="callout info">
-            <div>You can see the <code>Scene3D</code> as the object that will hold and render all your 3D models and sprites.</div>
-        </div>
-
         <hr class="divider">
 
-        <h2 class="noBorder"> Scene Core logic loops</h2>
+        <h2 class="noBorder">Setting the Scene and Adding Objects</h2>
 
-        <h3>Load</h3>
+        <p>Here is a very basic exemple of a <code>Scene3D</code> creation and loading, with the setup of the main <code>Camera3D</code>, one <code>GameObject</code> added and an update of the <code>LightingSettings</code>.</p>
 
-        When <code>LoadScene</code> is called on the <code>EngineEntity</code>, the scene initialization starts. <br><br> During this, the <code>Scene3D</code>
-            starts by creating a default <code>Camera3D</code> and sets it to be the Rendering one if none was created and set before. You can create yourself
-            your own <code>Camera3D</code> and set it in the scene with <code>SetMainCamera()</code> before or after the scene loading. <br>
-        The <code>Scene3D</code> also places and set its Skybox with the default sky Texture and initialize its <code>CollisionSystem</code> and <code>Renderer3D</code>.</p>
-
-        <div class="callout info">
-            <div><code>Skybox.Destroy()</code> is disabled by default. If you don't want to use a Skybox, use <code>EnableSkybox(false)</code> directly in your scene.</div>
-        </div>
-
-        <p>Then, the Scene3D will call the <code>OnSceneLoad</code> event, that you can use to invoke code at this precise moment. And finally,
-        <code>Start()</code> will be called on every <code>GameObject</code> that was added before the scene was loaded.</p>
-
-        <div class="callout warn">
-            <div>Note that the <code>Behaviour</code> functions <code>Added()</code> will be called at the exact moment the object is added, even if it's before the scene load.
-            <code>Start()</code> will only be called after the Scene loading and <code>OnSceneLoad</code> event call, ensuring most of the <code>Scene3D</code> core references are initialized
-                and not null. More information in the <code>GameObject</code> and <code>Behaviour</code> pages.</div>
-        </div>
-
-        <h3>Update</h3>
-
-        <p>The scene's <code>Update()</code> function is called by the <code>EngineEntity</code> at the exact same rate than the core Monocle/Celeste update tick rate.
-            (since <code>EngineEntity</code> is a Celeste Entity).
-
-            <br><br>At the start of every <code>Update()</code> loop, <code>Start()</code> will be called on every <code>GameObject</code> that was added during the previous frame.
-            Then <code>Update()</code> is called on every <code>GameObject</code> present in the scene, and the <code>AudioListener</code> position is updated.
-        <br>The <code>Renderer3D</code> will process every <code>Model3D</code> information, and store the result in the appropriate <code>RenderTarget2D</code> for later rendering.
-        </p>
-
-
-        <p>And to finish the Update cycle, the scene will resolve the collisions for every active <code>Collider3D</code> and <code>CollisionDetector</code>, and then clean up and remove every GameObject on which <code>Destroy()</code> was called.</p>
-
-        <h3>Render</h3>
-
-        <p>After the <code>Update()</code> loop finishes, a shorter one starts. <code>Render()</code> is called on every custom <code>Behaviour</code> in the scene.
-            <br> And then, if the debug option is enabled, the loaded <code>Collider3D</code> and <code>RayCast</code> will be drawn into the screen.
-
-        </p>
-
-        <div class="callout info">
-            <div>This loop is named render to follow Monocle/Celeste namings, even if here no real rendering is done. This loop is called
-                exactly when the Celeste entities <code>Render()</code> code is called. It's the same as Update, called at the Celeste tick rate from <code>EngineEntity</code>. <br> If you need to visually debug things or draw a sprite at the moment <code>Render()</code> would be called in a celeste entity, it can be useful, like for the
-                collider and raycast debug draws, since it will always be drawn over the 3D World (in Celeste Entity.Render is called after Level.Render)
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Scene basic setup</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
             </div>
+            <pre>Scene3D scene = new Scene3D();
+
+void SetupScene()
+{
+    <span class="cm">//Exemple Camera3D created, placed, and set as Rendering Camera for the scene</span>
+    Camera3D cam = new Camera3D();
+    cam.transform.SetPosition(new Vector3(0f, 10f, 5f));
+    scene.SetMainCamera(cam);
+
+    <span class="cm">//Instantiation of a GameObject for the player, with a 3D model</span>
+    GameObject player = new GameObject("Player");
+    player.AddComponent(new MeshRenderer("playerModel"));
+    scene.AddGameObject(player);
+
+    <span class="cm">//Gets the actual settings of the scene and update them</span>
+    LightingSettings settings = scene.GetLightingSettings();
+    settings.DirectionalLightCastsShadows = false;
+    settings.fogColor = new Vector3(0.5f);
+    scene.SetLightingSettings(settings);
+
+    <span class="cm">//Pass the scene to the EngineEntity to load it. This can be done before or after the previous steps.</span>
+    EngineEntity.LoadScene(scene);
+}</pre>
         </div>
+
 
         <hr class="divider">
 
@@ -116,6 +98,57 @@ List&lt;GameObject&gt; movingEnemies = scene.FindAllByType&lt;EnemyMovement&gt;(
 
         <div class="callout info">
             <div>Finding functions can be heavy, especially if called from <code>Update()</code> and in scenes with a lot of objects. Prefer storing objects references when creating them as much as possible.</div>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder">Scene Core logic loops</h2>
+
+        <h3>Load</h3>
+
+        When <code>LoadScene</code> is called on the <code>EngineEntity</code>, the scene initialization starts. <br><br> During this, the <code>Scene3D</code>
+        starts by creating a default <code>Camera3D</code> and sets it to be the Rendering one if none was created and set before. You can create yourself
+        your own <code>Camera3D</code> and set it in the scene with <code>SetMainCamera()</code> before or after the scene loading. <br>
+        The <code>Scene3D</code> also places and set its Skybox with the default sky Texture and initialize its <code>CollisionSystem</code> and <code>Renderer3D</code>.</p>
+
+        <div class="callout info">
+            <div><code>Skybox.Destroy()</code> is disabled by default. If you don't want to use a Skybox, use <code>EnableSkybox(false)</code> directly in your scene.</div>
+        </div>
+
+        <p>Then, the Scene3D will call the <code>OnSceneLoad</code> event, that you can use to invoke code at this precise moment. And finally,
+            <code>Start()</code> will be called on every <code>GameObject</code> that was added before the scene was loaded.</p>
+
+        <div class="callout warn">
+            <div>Note that the <code>Behaviour</code> functions <code>Added()</code> will be called at the exact moment the object is added, even if it's before the scene load.
+                <code>Start()</code> will only be called after the Scene loading and <code>OnSceneLoad</code> event call, ensuring most of the <code>Scene3D</code> core references are initialized
+                and not null. More information in the <code>GameObject</code> and <code>Behaviour</code> pages.</div>
+        </div>
+
+        <h3>Update</h3>
+
+        <p>The scene's <code>Update()</code> function is called by the <code>EngineEntity</code> at the exact same rate than the core Monocle/Celeste update tick rate.
+            (since <code>EngineEntity</code> is a Celeste Entity).
+
+            <br><br>At the start of every <code>Update()</code> loop, <code>Start()</code> will be called on every <code>GameObject</code> that was added during the previous frame.
+            Then <code>Update()</code> is called on every <code>GameObject</code> present in the scene, and the <code>AudioListener</code> position is updated.
+            <br>The <code>Renderer3D</code> will process every <code>Model3D</code> information, and store the result in the appropriate <code>RenderTarget2D</code> for later rendering.
+        </p>
+
+
+        <p>And to finish the Update cycle, the scene will resolve the collisions for every active <code>Collider3D</code> and <code>CollisionDetector</code>, and then clean up and remove every GameObject on which <code>Destroy()</code> was called.</p>
+
+        <h3>Render</h3>
+
+        <p>After the <code>Update()</code> loop finishes, a shorter one starts. <code>Render()</code> is called on every custom <code>Behaviour</code> in the scene.
+            <br> And then, if the debug option is enabled, the loaded <code>Collider3D</code> and <code>RayCast</code> will be drawn into the screen.
+
+        </p>
+
+        <div class="callout info">
+            <div>This loop is named render to follow Monocle/Celeste namings, even if here no real rendering is done. This loop is called
+                exactly when the Celeste entities <code>Render()</code> code is called. It's the same as Update, called at the Celeste tick rate from <code>EngineEntity</code>. <br> If you need to visually debug things or draw a sprite at the moment <code>Render()</code> would be called in a celeste entity, it can be useful, like for the
+                collider and raycast debug draws, since it will always be drawn over the 3D World (in Celeste Entity.Render is called after Level.Render)
+            </div>
         </div>
 
         <hr class="divider">
