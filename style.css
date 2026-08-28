@@ -189,6 +189,12 @@ code {
     color: #a5d6ff;
 }
 
+.image-right{
+    margin-left: auto;
+    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    min-width: auto;
+}
+
 /* ── Code block ── */
 .code-block {
     background: var(--code-bg);

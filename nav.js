@@ -102,10 +102,17 @@ function renderHeader() {
       ${SITE.name}<span>${SITE.nameAccent}</span>${SITE.name2}
     </div>
     <div class="version-badge">${SITE.version}</div>
-    <div class="header-search">
-      Search
+    <div class="image-right">
+      <img src="blueberry.png" alt="" id="blueberry">
     </div>
   `
+
+    const blueberry = document.querySelector("#blueberry")
+    blueberry.addEventListener("click", () => {
+        const audio = new Audio("strawberry_touch.wav")
+        audio.play()
+    })
+
 }
 
 // ── Sidebar
