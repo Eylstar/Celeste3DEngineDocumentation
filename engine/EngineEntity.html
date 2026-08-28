@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C3DE - EngineEntity</title>
+    <title>EngineEntity</title>
     <base href="/Celeste3DEngineDocumentation/">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="berry.ico">
@@ -19,7 +19,7 @@
 
             <div class="page-meta">
                 <span class="tag"> Class </span>
-                <span class="tag"> Inherits from <a href="">Monocle.Entity</a> </span>
+                <span class="tag"> Inherits from Monocle.Entity </span>
             </div>
 
             <p>The <code>EngineEntity</code> class is the one who will load the whole Engine. It represents the bridge beetween the Celeste/Monocle pipeline and this one and it's a Celeste Entity, placeable in Lönn. Having this Entity placed in a room will allow you to use the 3D Engine.
@@ -55,11 +55,50 @@ void CreateMainScene(EngineEntity entity, Scene celesteScene)
 
     <span class="cm">// Load the Scene in the EngineEntity</span>
     EngineEntity.LoadScene(myscene);
+}
+
+<span class="cm">// Unsubscribe</span>
+public override void Removed(Scene s)
+{
+    base.Removed(s);
+    EngineEntity.OnEngineLoad -= CreateMainScene;
+}
+
+public override void SceneEnd(Scene s)
+{
+    base.SceneEnd(s);
+    EngineEntity.OnEngineLoad -= CreateMainScene;
 }</pre>
             </div>
 
 
-            <p><br>By default, the engine should not be persistent across rooms, since it relies on a Celeste Entity to work. To solve this, the <code>EngineEntity</code> contains a workflow to save and load itself its state across rooms and celeste levels quit/reload. <br>Persistent state is at <code>true</code> by default, you can change it with <code>SetPersistence</code>.
+            <p><br>By default, the engine should not be persistent across rooms, since it relies on a Celeste Entity to work. To solve this, the <code>EngineEntity</code>
+                contains a workflow to save and load itself its state across rooms and celeste levels quit/reload. <br>Persistent state is at <code>false</code> by default, you can change it with <code>SetPersistence</code>.
+                <br>See <code>Engine Persistence</code> and <code>EngineCallbacks</code> pages for more information.
+            </p>
+
+            <hr class="divider">
+
+            <h2 class="noBorder"> Constructors </h2>
+
+            <table class="prop-table">
+                <thead>
+                <tr>
+                    <th>Declaration</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td><span class="prop-name">EngineEntity(EntityData data, Vector2 offset) : base(data.Position + offset)</span></td>
+                    <td>Base Celeste Entity constructor. Don't use it</td>
+                </tr>
+                <tr>
+                    <td><span class="prop-name">EngineEntity(string models, string textures, string exports, string fonts, string audio, bool persistence)</span></td>
+                    <td>Creates a new EngineEntity with the specified paths and persistence. Useful for runtime EngineEntity creation. Strings can be empty if not used, see <code>EnginePaths</code>.</td>
+                </tr>
+                </tbody>
+            </table>
 
             <hr class="divider">
 
@@ -117,7 +156,7 @@ void CreateMainScene(EngineEntity entity, Scene celesteScene)
             <hr class="divider">
 
             <div class="callout warn">
-                <div>Since <code>Scene3D</code> inherits from <code>Monocle.Entity</code>, it also inherits forced public methods such as its constructor and methods like <code>Added</code>, <code>Update</code> etc. Don't use them unless you're absolutely sure what you're doing.</div>
+                <div>Since <code>EngineEntity</code> inherits from <code>Monocle.Entity</code>, it also inherits forced public methods such as its constructor and methods like <code>Added</code>, <code>Update</code> etc. Don't use them unless you're absolutely sure what you're doing.</div>
             </div>
 
         </main>

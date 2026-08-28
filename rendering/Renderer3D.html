@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renderer3D</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>Renderer3D</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Class </span>
+        </div>
+
+        <p><code>Renderer3D</code> is the class responsible for drawing everything in a <code>Scene3D</code>, world models, shadows, lighting, and HUD elements. Every <code>Scene3D</code> creates and owns exactly one <code>Renderer3D</code> automatically, you never create one yourself but you access it with <code>Scene3D.GetRenderer()</code>.
+            <br><br> Almost everything this class does happens automatically every frame as part of the Scene's normal update cycle, you don't call its rendering steps directly. Its public surface is intentionally small, mostly a couple of settings to control how and whether the scene gets rendered.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Basic Renderer3D usage</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//Getting the renderer from the scene</span>
+Renderer3D renderer = myScene.GetRenderer();
+
+<span class="cm">//Switching to HD mode, rendering the 3D scene at full resolution instead of Celeste's native buffer</span>
+renderer.SetHDMode(true);
+
+<span class="cm">//Temporarily disabling all 3D rendering, GameObjects keep updating, they just stop being drawn</span>
+renderer.enabled = false;</pre>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Rendering Pipeline </h2>
+
+        <p><br>Every frame, before anything is drawn to the screen, <code>Renderer3D</code> runs through a sequence of steps to prepare its render targets.
+            <br><br> <b>1. Directional light shadow map</b> - if the Scene's <code>LightingSettings</code> has <code>DirectionalLightCastsShadows</code> enabled,
+            the directional shadowMap is rendered. Only <code>GameObjects</code> whose <code>MeshRenderer.castsShadows</code> is true are included.
+            <br><br> <b>2. Spot light shadow maps</b> - every <code>ConeLight</code> with shadows enabled gets its own shadow map, up to <code>LightingSettings.maxShadowedLights</code> at a time. Lights beyond that limit are simply skipped for shadows, they still light the scene normally. For each shadow casting spot light, models are culled by distance before being rendered into its shadow map, based on the light's range and each model's bounding sphere.
+            For performance reasons, <code>PointLight</code> can't cast shadows.
+            <br><br> <b>3. World models</b> - <code>World</code> and <code>Foreground</code> layer models are rendered into two separate render targets. Any model with <code>MeshRenderer.isFrustumCulled</code> enabled is tested against the camera's frustum using its bounding sphere, and skipped entirely if fully outside of it.
+            <br><br> <b>4. Lighting</b> - every enabled <code>Light</code> is applied additively on top of every lit, visible model whose bounding sphere is within the light's range, models further than a light's range plus their own bounds are skipped for that light.
+            <br><br> <b>5. UI and HUD</b> - world space UI canvases are rendered into the scene, then HUD models are drawn on top with the depth buffer cleared beforehand, so they always appear above the rest of the scene regardless of distance.
+
+        </p>
+
+        <div class="callout info">
+            <div>Frustum culling and shadow casting both rely on each Model's bounding sphere, computed from its mesh data in local space and transformed to world space using the GameObject's Transform.</div>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> HD Mode </h2>
+
+        <p>
+            <code>Renderer3D</code> can render the scene in two different ways, controlled by <code>SetHDMode()</code>. With HD mode off, the scene renders at Celeste's native pixel art resolution, matching the rest of the game's gameplay rendering. With HD mode on, the scene renders using the full viewport instead, at whatever resolution the game window currently is.
+            <br><br> This choice affects how the 3D scene interacts with the rest of Celeste's rendering. The content of the scene itself still works the same way regardless of this setting. (see <code>MeshRenderer</code> Layer Properties Details documentation part for more information) but it ends up modifying the final post processed rendering of your scene (different hooking placement).
+
+            <br><br>With HD mode off, the 3D scene is drawn into the same buffer Celeste uses for the rest of the room.
+            Any of that room's own rendering settings (darkness, bloom, custom color grade) gets applied to that buffer, over your "flattened" 3D content, the same way they'd affect the room's regular 2D content.
+            <br><br>With HD mode on, the scene draws entirely separately, so none of that touches it. If your 3D scene's colors look different in HD than in non HD, this is why.
+        </p>
+
+        <div class="callout info">
+            <div>This also means that you can use the Celeste post processing options to affect your pixel art 3D rendering deliberately. Not doable with HD rendering tho.</div>
+        </div>
+
+
+
+        <hr class="divider">
+
+        <h2> Properties </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">enabled</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether the Renderer3D renders the scene at all, default true, setting this to false skips the entire rendering pipeline for this Scene, GameObject Update logic keeps running as normal</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">IsHDMode</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether the Renderer is currently rendering in HD mode, set with SetHDMode</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h2> Methods </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Method</th>
+                <th>Return type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">SetHDMode(bool hdMode)</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Sets whether the Renderer should render in HD mode or not</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

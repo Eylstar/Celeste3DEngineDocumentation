@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Behaviour</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>Behaviour</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Class </span>
+            <span class="tag"> Abstract </span>
+            <span class="tag"> Component </span>
+        </div>
+
+        <p><code>Behaviour</code> is the base class for all of your custom game logic. It's abstract, so it cannot be used directly, you need to write your own class inheriting from it and override the life cycle methods you need. This is where the actual behaviour of your <code>GameObject</code> lives, movement, interactions, gameplay rules, anything that needs to run over time.
+            <br><br> A <code>GameObject</code> can hold any number of <code>Behaviour</code> at once, each one running independently. They are added like any other Component, with <code>AddComponent()</code>, and can be created without any constructor arguments of your own choosing, since <code>Behaviour</code> itself declares none.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Writing and attaching a custom Behaviour</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//A simple Behaviour that spins its GameObject every frame</span>
+public class RotatingProp : Behaviour
+{
+    public float rotationSpeed = 45f;
+
+    public override void Update(float deltaTime)
+    {
+        transform.Rotate(new Vector3(0f, rotationSpeed * deltaTime, 0f));
+    }
+}
+
+<span class="cm">//Attaching it to a GameObject</span>
+GameObject prop = new GameObject("Prop");
+prop.AddComponent(new RotatingProp());</pre>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Life Cycle </h2>
+
+        <p><br>A Behaviour follows the same 5 steps as its owning object, <code>Added</code>, <code>Start</code>, <code>Update</code>, <code>Render</code> and <code>Removed</code>, called at the same time as the matching <code>GameObject</code> step. None of these need to be overridden, only override the ones your logic actually needs.
+            <br><br> <code>Added</code> is called once, at the moment the Behaviour's object is added to the Scene with <code>Scene3D.AddGameObject</code>. Scene references may still be unavailable at this point, so use them with caution.
+            <br><br> <code>Start</code> is called once, right before this Behaviour's very first <code>Update</code>. It always runs on the same frame as that first Update, whether the <code>Behaviour</code> existed on the <code>GameObject</code> from the start or was added later at runtime.
+            <br><br> <code>Update</code> runs every frame after <code>Start</code> has run, at the same rate as the rest of the Scene.
+            <br><br> <code>Render</code> runs every frame, after every GameObject's <code>Update</code> step has completed for that frame.
+            <br><br> <code>Removed</code> is called once, when the <code>GameObject</code> holding this <code>Behaviour</code> is destroyed.
+        </p>
+
+        <div class="callout info">
+            <div>Setting <code>enabled</code> to false stops both <code>Start</code>, <code>Update</code> and <code>Render</code> from being called for this Behaviour. Re-enabling it later will trigger <code>Start</code> on the next Update if it had not run yet.</div>
+        </div>
+
+        <div class="callout warn">
+            <div><code>Added()</code> is only called for Behaviours already attached to a <code>GameObject</code> at the moment that object is added to the Scene. If you use <code>AddComponent()</code> to attach a new Behaviour to a GameObject that is already in the Scene, <code>Added()</code> will not be called for it, only <code>Start</code>, <code>Update</code> and <code>Render</code> will run normally.</div>
+        </div>
+
+        <div class="callout warn">
+            <div><code>Removed()</code> is only called when the entire GameObject is destroyed with <code>GameObject.Destroy()</code>. Removing a single Behaviour from a GameObject that stays alive, with <code>RemoveComponent()</code>, <code>RemoveFirstFoundComponent()</code> or <code>RemoveAllComponents()</code>, does not call <code>Removed()</code> on it.</div>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Shortcuts </h2>
+
+        <p>
+            To avoid writing <code>gameObject.transform</code> or <code>gameObject.scene</code> everywhere, a <code>Behaviour</code> gives direct access to its owning object's <code>Transform</code> and <code>Scene3D</code> through the <code>transform</code> and <code>scene</code> properties.
+        </p>
+
+        <hr class="divider">
+
+        <h2> Properties </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">enabled</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether this Behaviour is enabled and should have its Update and Render methods called, default true</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">gameObject</span></td>
+                <td><span class="prop-type">GameObject</span></td>
+                <td>The GameObject this Behaviour is attached to</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">transform</span></td>
+                <td><span class="prop-type">Transform</span></td>
+                <td>The Transform of the GameObject this Behaviour is attached to</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">scene</span></td>
+                <td><span class="prop-type">Scene3D</span></td>
+                <td>The Scene this Behaviour's GameObject is in</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h2> Methods </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Method</th>
+                <th>Return type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">Added()</span></td>
+                <td><span class="prop-type">virtual void</span></td>
+                <td>Called when the GameObject is added to the Scene, the Scene and its 3D models may still not be loaded by the Engine at this point</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">Start()</span></td>
+                <td><span class="prop-type">virtual void</span></td>
+                <td>Called once before the first Update of the Behaviour</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">Update(float deltaTime)</span></td>
+                <td><span class="prop-type">virtual void</span></td>
+                <td>Called every frame at the same time as Celeste.Entity.Update</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">Render()</span></td>
+                <td><span class="prop-type">virtual void</span></td>
+                <td>Called every frame at the same time as Celeste.Entity.Render</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">Removed()</span></td>
+                <td><span class="prop-type">virtual void</span></td>
+                <td>Called when the GameObject is removed from the Scene</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

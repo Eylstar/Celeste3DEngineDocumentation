@@ -1,0 +1,122 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engine Persistence</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>Engine Persistence</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Guide </span>
+        </div>
+
+
+        <div class="callout info">
+            <div>If you want to make a full 3D game with no Celeste gameplay/interaction you can skip this section. <br>It's only suited for cases where you want to play in 3D and in Celeste simultaneously, or if you use the Engine as a graphic tool/decoration,
+                and the visual needs persistence beetween rooms (3D background for example, although sometimes having one engine and one loading entity per room might be better).</div>
+        </div>
+
+        <p>
+            Right now, everything we built only runs once, the first time this room loads. If the player leaves and comes back, the Engine gets destroyed and rebuilt from scratch, and <code>OnEngineLoad</code> fires again, running our whole setup a second time.
+            For a single room scene, that's completely fine.
+            <br><br> If you want the same Engine, with everything already in it, to follow the player across multiple rooms without rebuilding, mark it as <code>persistent</code> in Lönn.
+            That's it, no code needed, the Engine and everything in its Scene just keeps existing as the player moves around.
+        </p>
+
+        <div class="callout warn">
+            <div><code>persistent</code> only means "survives moving between rooms". It doesn't mean your scene is saved to disk or remembered after a save and quit, that's a different problem, covered right below.</div>
+        </div>
+
+        <p>
+            A save and quit or relaunching Celeste is a harder case. The whole game process restarts, so a persistent Engine doesn't survive that either, and neither does our <code>MySceneBuilder</code>, since it only gets created again if the player
+            happens to walk back through the exact room it was placed in.
+            <br><br>The Engine actually already rebuilds itself automatically once the player returns into the level they left with a running engine marked as <code>persistent</code>.
+            It restores his paths and re create itself into the room, but it has no way of knowing what is our setup code and what needs to run again with it, so it won't display anything.
+            <br><br>That's what <code>EngineCallbacks</code> is for, telling the Engine "if you ever rebuild yourself, call this function for me".
+        </p>
+
+        <div class="callout info">
+            <div>The <code>string</code> used to register and create callback needs to be unique. Try to stick to the <code>MapName/YourName/className</code> to prevent any chance of duplicates (unlikely but still). </div>
+        </div>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Registering our scene builder so it survives a save and quit</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//In our mod's own EverestModule, this runs once every time the mod loads at the game start, no room needed yet</span>
+public class MyModModule : EverestModule
+{
+    public override void Load()
+    {
+        <span class="cm">//We register a callback to the Engine with our unique string and what to invoke when it rebuilds itself</span>
+        EngineCallbacks.RegisterCallback("MyMod/Eylstar/sceneBuilder", MySceneBuilder.OnRespawn);
+    }
+}
+
+
+<span class="cm">//Back in MySceneBuilder, we add a second constructor, only used to rebuild our class and scene without Lönn</span>
+public MySceneBuilder() : base(Vector2.Zero) { }
+
+<span class="cm">//This is the function we put in the RegisterCallback parameter, called by the engine if it rebuilds</span>
+<span class="cm">//This needs to be public static, and it takes the same parameters as the OnEngineLoad event</span>
+public static void OnRespawn(EngineEntity engine, Scene scene)
+{
+    <span class="cm">//We create an instance of our loading class</span>
+    MySceneBuilder builder = new MySceneBuilder();
+    <span class="cm">//And then we call the same function the OnEngineLoad event invoke would have called</span>
+    builder.OnEngineLoad(engine, scene);
+
+    <span class="cm">//Not required, do this if you need to use your Celeste Entity virtual functions like Update or Added</span>
+    scene.Add(builder);
+}</pre>
+        </div>
+
+        <p>
+            Then, every time your loading code runs (usually in the scene building function), it needs to tell the Engine what callback is linked to the level it's in, with the unique string you defined.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Setting the callback at the end of OnEngineLoad</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>void OnEngineLoad(EngineEntity engine, Scene scene)
+{
+    ...
+
+    <span class="cm">//Tells this map's save data which callback to use if the Engine ever needs to be rebuilt in this level</span>
+    EngineCallbacks.CreateCallbackID(scene, "MyMod/Eylstar/sceneBuilder");
+}</pre>
+        </div>
+
+        <p>This way, the id and the level name are stored in the <code>MapSaveData</code>. So if you re-enters the level you left with a engine persistent, the engine will rebuild, then look into the save data, find your id (created with <code>CreateCallbackID</code>), and then call the registered corresponding function
+            (set with <code>RegisterCallback</code>) if one is found.
+
+            <br><br>You can test this by setting the engine as <code>peristent</code> to true in Lonn and placing a second room next to your main room. If you change room, save and quit in the second room
+            and re enters the level, or even just reloads the second room with F5, the engine will also be kept running correctly.</p>
+
+        <div class="callout info">
+            Note that when the engine rebuilds itself and call the loading function, the state of your 3D game is lost, everything is placed back at his original values. If you want to make a custom game that
+            doesn't loose its progression on reload, keep this in mind and store your important values,
+            such as position or progression in your own mapData.
+        </div>
+
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

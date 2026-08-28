@@ -1,0 +1,129 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Savestates Crashes</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>Savestates Crashes</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Guide </span>
+        </div>
+
+        <div class="callout info">
+            <div><code>SpeedrunTool</code> is one of the most widely used mods in the entire Celeste modding scene,
+                a huge number of your players will have it installed. If you skip this page, you may expect some of them to hit a crash when using states.</div>
+        </div>
+
+        <p> <code>SpeedrunTool</code> lets players save and reload the exact state of a room instantly, mid run. To do that, it deep clones every Entity in the room, field by field, so it can restore them later exactly as they were.
+            <br><br> Without going into technical detail, if any <code>UICanvas</code> in that scene has a <code>TextRenderer</code> on it, that <code>TextRenderer</code> relies on <code>FontStashSharp</code>,
+            an external library used to read and render custom fonts. It wasn't built with Celeste mods or being cloned like this in mind, and trying to deep clone it or clearing his references this way is what actually causes the problem.</p>
+
+        <div class="callout warn">
+            <div>When this happens, it doesn't throw a normal exception you can read in the log, it hard crashes the game silently.
+                If you've ever seen a crash like this, this may be the reason.</div>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> How to prevent </h2>
+
+        <p>
+            <code>SpeedrunTool</code> exposes an official <code>ModInterop</code>, a way for other mods to talk to it without needing its assembly to compile or run. So you don't have to have the mod installed
+            to tell it to completely ignore a specific Entity, in this case, our loading mod.
+        </p>
+
+        <div class="callout info">
+            <div>The Engine already does exactly this internally for the <code>EngineEntity</code> itself. This page is about protecting your own loading Entity, <code>MySceneBuilder</code> in our tutorial, the one that actually holds the Scene to the Engine.</div>
+        </div>
+
+        <p>
+            First declare the import. This only needs to exist once, anywhere in your mod
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Declaring the SpeedrunTool import</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>using MonoMod.ModInterop;
+
+[ModImportName("SpeedrunTool.SaveLoad")]
+internal static class SpeedrunToolImports
+{
+    public static Action&lt;Entity, bool&gt; IgnoreSaveState;
+}</pre>
+        </div>
+
+        <p>
+            From your own EverestModule, tell your mod to use the ModInterop
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Filling the import in your EverestModule</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>public class MyModModule : EverestModule
+{
+    ...
+    public override void Load()
+    {
+        ...
+        typeof(SpeedrunToolImports).ModInterop();
+    }
+}</pre>
+        </div>
+
+        <p>
+            And finally, use and invoke it in every of your Entity's constructors
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Making MySceneBuilder invisible to SpeedrunTool</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>public MySceneBuilder(EntityData data, Vector2 offset) : base(data.Position + offset)
+{
+    <span class="cm">//Tells SpeedrunTool to leave this Entity alone entirely, if it's installed</span>
+    SpeedrunToolImports.IgnoreSaveState?.Invoke(this, true);
+
+    EngineEntity.OnEngineLoad += OnEngineLoad;
+}</pre>
+        </div>
+
+        <p>The second parameter, <code>true</code>, prevents your Entity's <code>Added</code> and <code>Removed</code> from firing during the brief remove and re-add SpeedrunTool does internally.
+            Since <code>MySceneBuilder</code> unsubscribes from <code>OnEngineLoad</code> in Removed, you don't want that triggered by a save state load that has nothing to do with actually leaving the room, so be sure
+            to pass <code>true</code> as the second parameter.</p>
+
+        <div class="callout info">
+            <div>The <b>?</b> in <code>?.Invoke</code> matters, <code>IgnoreSaveState</code> stays null if the player doesn't have SpeedrunTool installed, <code>ModInterop()</code> only fills it in when the target mod is actually present.
+                This keeps <code>SpeedrunTools</code> a soft, optional interaction, you never need to add it as a dependency in your <code>everest.yaml</code>.</div>
+        </div>
+
+
+
+
+
+        <div class="callout info">
+            <div>Even if your second constructor used for the <code>EngineCallbacks</code> never ends adding the Entity to the Celeste Scene, it still is a good habit of preventing <code>SpeedrunTools</code> to detect the entity in every constructor, just in case.</div>
+        </div>
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

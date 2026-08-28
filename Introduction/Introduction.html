@@ -1,0 +1,531 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your First Project</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>Your First Project</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Guide </span>
+        </div>
+
+        <p>
+            This little tutorial walks through everything you need to know to get a 3D scene showing up in <code>Celeste</code>.
+            From loading the <code>EngineEntity</code>, building a scene, adding your own logic and UI to it. <br>An explanation of the persistence logic of the engine, and on how to prevent <code>SpeedrunTools</code>
+            to make your game crash are in separate pages. It is recommended to follow this tutorial before going to see them.
+        </p>
+
+        <h2 class="noBorder">Summary :</h2>
+
+        <p>
+            <br><h4><a href="Introduction/Introduction.html#1">1. Mod Setup and Folders</a>  </h4>
+            <br><h4><a href="Introduction/Introduction.html#2">2. Loading and hooking the Engine</a></h4>
+            <br><h4><a href="Introduction/Introduction.html#3">3. Scene Creation and Rendering</a></h4>
+            <br><h4><a href="Introduction/Introduction.html#4">4. Loading custom Models</a></h4>
+            <br><h4><a href="Introduction/Introduction.html#5">5. Adding Custom code and Behaviour</a></h4>
+            <br><h4><a href="Introduction/Introduction.html#6">6. Simple Physics Collisions and Detections</a></h4>
+            <br><h4><a href="Introduction/Introduction.html#7">7. Adding UI</a></h4>
+            <br><h4><a href="Introduction/Persistence.html">8. Engine Persistence</a></h4>
+            <br><h4><a href="Introduction/SaveStates.html">9. Prevent Savestates crashes</a></h4>
+
+
+        </p>
+
+
+        <hr class="divider" id="1">
+
+        <h2 class="noBorder" > 1. Mod Setup and Folders </h2>
+
+        <p>The first important step, and common to every project you'll make, is to make and respect a folder/naming hierarchy. What I present to you is a convention, it's based on the already existing Everest one, and it's better if we all follow the same.
+        Of course, it's up to you to respect it or not, depending on your needs. <br><br>The actual standard is to have a folder "3DEngine" in the Graphics one, right next to the very common "Atlases" folder.
+            Then from here, you can create the 5 main folders the Engine will search in : Models, Textures, Exports, Audio and Fonts (or only the ones you'll need if you know in advance).
+            <br><br> Like any other Everest asset, then in these 5 folders you create one subfolder with your map name, and one with your name, to prevent any possible confilct. And then you can place your data in this last folder
+
+        </p>
+
+        <div class="img-block">
+            <img src="Introduction/schema.png" alt="Scene Graph Example">
+        </div>
+        <div class="img-caption">Basic Folder Hierarchy</div>
+
+
+        <div class="callout info">
+            <div>You can create as many subfolders you want : You can simply put all your models in the Models/Map/Name/.. folder, but you can also create subfolders to organize them better.
+                For functions that needs a model name, instead of typing <code>"playerModel"</code> you'll need to type <code>"characters/playerModel"</code> if you place your player's model in a "characters" subfolder.</div>
+        </div>
+
+        <p><br><br>Once the folders are set up, you need to reference the Engine in you mod IDE to be able to use its functions. Start by downloading the zip of the <code>Celeste3DEngine</code>, place it like any other mod in your mods folder, and unzip it.
+            (You can delete the .zip version if you don't want them both).
+            <br><br>Once done and once you have set up your own code mod (see the main Celeste discord/<code>Everest</code> wiki if needed) you'll need to add the reference to the <code>Celeste3DEngine.dll</code> found in the unzipped mod (bin folder).
+            <br><br>Finally, don't forget to add the engine as a dependency into your own mod <code>everest.yaml</code>, using the latest version.
+
+
+        </p>
+
+        <hr class="divider" id="2">
+
+        <h2 class="noBorder"> 2. Loading and hooking the Engine </h2>
+
+        <p>
+            Once you did the folder setup and linked your code mod to the engine in the IDE, you can create and open your own map with Lonn.
+            <br><br>The Engine provides the Celeste Entity "<code>EngineEntity</code>". Place one in your room and fill in the five path attributes of the Entity (<code>modelsPath</code>, <code>texturesPath</code>, <code>exportsPath</code>, <code>fontsPath</code>
+            and <code>audioPath</code>), pointing at the folders you setuped before. This tells the Engine where to find your assets.<br>
+            Strings should look something like this : <code>"Graphics/3DEngine/Models/MyMap/MyName"</code>.  Don't put a / at the end of your string.
+        </p>
+
+        <div class="callout info">
+            <div>Note that you don't need to fill every field if you don't use them, you can leave an empty string. Paths can also be changed at runtime, see <code>EnginePaths</code> page.</div>
+        </div>
+
+        <p>
+            You can also say if you want the engine to be <code>persistent</code> or not (more information at the end of this tutorial).
+            If you want to use the engine in multiple rooms, you should set it as persistent, otherwise it will be destroyed when leaving the room and rebuilt when coming back.
+            <br><br>
+            Once placed in a room, the Engine doesn't build anything on its own, it just loads itself and waits. You need to create your own <code>CustomEntity</code> with a lua file to place it in Lonn to use the Engine.
+            <br><br>Your own code hooks into the engine with <code>EngineEntity.OnEngineLoad</code>, usually subscribed from the constructor of your custom Entity placed in the same room.
+            It's your code that's gonna feed the engine your models, textures and custom code for it to run.
+            <br><br>Here is the base code example for the custom entity :
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">A minimal entry point</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>[CustomEntity("mymod/sceneBuilder")]
+public class MySceneBuilder : Entity
+{
+    public MySceneBuilder(EntityData data, Vector2 offset) : base(data.Position + offset)
+    {
+        EngineEntity.OnEngineLoad += OnEngineLoad;
+    }
+
+    void OnEngineLoad(EngineEntity engine, Scene scene)
+    {
+        Logger.Info("SceneBuilder", "EngineEntity loaded !");
+        <span class="cm">// All the scene creation can happen here</span>
+    }
+
+    <span class="cm">//Don't forget to unsubscribe from events</span>
+    public override void Removed(Scene s)
+    {
+        base.Removed(s);
+        EngineEntity.OnEngineLoad -= OnEngineLoad;
+    }
+
+    public override void SceneEnd(Scene s)
+    {
+        base.SceneEnd(s);
+        EngineEntity.OnEngineLoad -= OnEngineLoad;
+    }
+}</pre>
+        </div>
+
+        <p>If everything was done correctly you should see the <code>"SceneBuilder", "EngineEntity loaded !"</code> log in the console. This means the engine is running, and your code mod linked to it.</p>
+
+        <hr class="divider" id="3">
+
+        <h2 class="noBorder"> 3. Scene Creation and Rendering </h2>
+
+        <p>
+            A <code>Scene3D</code> is what actually holds all of your 3D content. Creating one doesn't render anything by itself, you need at least one camera set as the main one, and something for it to look at.
+            Creating a <code>Scene3D</code> creates a default main camera inside it, but you can at any time create another one and change it, useful if you want to directly place it and rotate it without having to Get his reference in the loaded scene. (see <code>Scene3D</code> and <code>Camera3D</code> pages)
+            <br><br> For a first scene, <code>DefaultGameObjects</code> are the fastest way to get something on screen without needing any models yet. (See <code>GameObject</code> page)<br>Here's a simple prototype of a basic <code>Scene3D</code> with the default <code>SkyBox</code>, one floor and one cube :
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">A camera, a floor and a cube</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>void OnEngineLoad(EngineEntity engine, Scene scene)
+{
+    <span class="cm">//Create the Scene Object</span>
+    Scene3D myScene = new Scene3D();
+
+    <span class="cm">//A camera looking at the origin</span>
+    Camera3D cam = new Camera3D();
+    cam.transform.SetPosition(new Vector3(0f, 6f, -9f));
+    cam.transform.LookAt(Vector3.Zero);
+    myScene.AddGameObject(cam);
+    myScene.SetMainCamera(cam);
+
+    <span class="cm">//Creates a floor and a rotated cube with Default static properties</span>
+    GameObject floor = GameObject.DefaultPlane;
+    floor.transform.SetScale(new Vector3(10f, 1f, 10f));
+    myScene.AddGameObject(floor);
+
+    GameObject cube = GameObject.DefaultCube;
+    cube.transform.SetPosition(new Vector3(0f, 0.5f, 0f));
+    cube.transform.Rotate(new Vector3(0f, 30f, 0f));
+    myScene.AddGameObject(cube);
+
+    myScene.GetRenderer().SetHDMode(true);
+
+    <span class="cm">//Load the Scene in the EngineEntity</span>
+    EngineEntity.LoadScene(myScene);
+}</pre>
+        </div>
+
+        <p>If everything until now was done correctly, you should get a Scene like this, with already working SkyBox, Lighting and shadows.
+            See <code>Scene3D</code> or <code>LightingSettings</code>for changing the skybox and how the lighting and the shadows behaves once you want more than the default settings.<br>
+        </p>
+
+        <div class="img-block">
+            <img src="Introduction/baseRender.png" alt="First scene render">
+        </div>
+        <div class="img-caption">Above code's render with the Engine</div>
+
+        <div class="callout info">
+            <div>Note that I added <code>myScene.GetRenderer().SetHDMode(true)</code> in the code for better visual clarity during the tutorial. A lot of people may prefer the internal Celeste pixel art resolution, by default the HD mode
+                is off and you can change the mode at ease, even during runtime.</div>
+        </div>
+
+        <hr class="divider" id="4">
+
+        <h2 class="noBorder"> 4. Loading custom Models </h2>
+
+        <p>Now that the scene is loaded and functional, it's time to load our own models to customize it. I've used this free Strawberry model here : <a href="https://sketchfab.com/3d-models/strawberry-f3d2acff04624141831326cd88a687b0">link.</a>
+        Download the .glb version and put it inside your Models folder.
+        <br><br> Now to load the model, we need to create a custom <code>MeshRenderer</code> with the data. Since it's a GLB model, only the model name (without extension) needs to be passed to the <code>MeshRenderer</code>.
+            If you want to use a OBJ mode, you'd need a spearate texture in your texture folder and give them both to the <code>MeshRenderer</code>. More info on its documentation page.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Loading the strawberry model and put it in the scene</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>void OnEngineLoad(EngineEntity engine, Scene scene)
+{
+    <span class="cm">//Create the Scene Object</span>
+    myScene = new Scene3D();
+
+    ...
+
+    <span class="cm">//Create a berry empty GameObject, placed and rescaled</span>
+    GameObject berry = new GameObject(new Vector3(3f, 0.5f, -1f), Vector3.Zero, Vector3.One * 0.5f, "Berry");
+
+    <span class="cm">//Create its MeshRenderer component with the model name and add it to the object</span>
+    MeshRenderer berryRend = new MeshRenderer("strawberry");
+    berry.AddComponent(berryRend);
+    myScene.AddGameObject(berry);
+
+    <span class="cm">//Load the Scene in the EngineEntity</span>
+    EngineEntity.LoadScene(myScene);
+}</pre>
+        </div>
+
+        <div class="img-block">
+            <img src="Introduction/customModel.png" alt="The strawberry object added and placed in the scene">
+        </div>
+        <div class="img-caption">The strawberry object added and placed in the scene</div>
+
+        <hr class="divider" id="5">
+
+        <h2 class="noBorder"> 5. Adding Custom code and Behaviour </h2>
+
+        <p>One of the main features of this engine and its component pattern, is that you can very easily add your own custom code to control objects and/or the rendering of the scene. Every custom code needs to be inside a class that inherits <code>Behaviour</code>
+            and is added to a <code>GameObject</code> like any component. Then by overriding the appropriate functions, you can code what you want.
+
+        <br><br>Here, we want to make our berry simply move with the arrow keys. We start by creating a custom controller class, put code in its <code>Update</code> function and apply this to the berry.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Moving the berry with the arrow keys</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//We create the Behaviour that will control our berry</span>
+public class BerryMovement : Behaviour
+{
+    <span class="cm">//public property to control its speed</span>
+    public float speed = 2f;
+
+    <span class="cm">//overriding Update, called once per frame</span>
+    public override void Update(float deltaTime)
+    {
+        base.Update(deltaTime);
+        Vector3 movement = Vector3.Zero;
+
+        <span class="cm">//Registering the inputs pressed</span>
+        if (MInput.Keyboard.Check(Keys.Up)) movement.Z += 1f;
+        if (MInput.Keyboard.Check(Keys.Down)) movement.Z -= 1f;
+        if (MInput.Keyboard.Check(Keys.Left)) movement.X += 1f;
+        if (MInput.Keyboard.Check(Keys.Right)) movement.X -= 1f;
+
+        <span class="cm">//If we have any movement, we normalize it and move the berry using its transform</span>
+        if (movement != Vector3.Zero)
+        {
+            movement.Normalize();
+            movement *= (speed * deltaTime);
+            gameObject.transform.MoveBy(movement);
+        }
+    }
+}
+
+<span class="cm">//Then we simply add it to our berry</span>
+void OnEngineLoad(EngineEntity engine, Scene scene)
+{
+    ...
+
+    BerryMovement berryMovement = new BerryMovement();
+    berryMovement.speed = 3f;
+    berry.AddComponent(berryMovement);
+}</pre>
+        </div>
+
+        <p>Now, if you input your arrow keys, you should see your berry moving freely in your scene !</p>
+        <div class="callout info">
+            <div>Update will always comes with a <code>deltaTime</code> value. Always use it if you make your objects move / behave in the scene. <code>deltaTime</code> is basically the time beetween this frame
+            and the previous frame, and multiplying the movement by it ensures that even at lower framerates, the physics remains accurate across all players.</div>
+        </div>
+
+
+        <hr class="divider" id="6">
+
+        <h2 class="noBorder"> 6. Simple Physics Collisions and Detections </h2>
+
+        <p>
+            Now our berry can move freely in the scene, but it passes through the cube, and anything. We need to use the couple <code>Collider3D</code> and <code>CollisionDetector</code> to enable physics calculations for our objects. (More
+            information on their respective pages). <br><br>For this example, we will add a wall in the back of the scene, against which the berry will collide and slide, and make the cube a trigger collider that changes color and make the berry
+            disappear if they touch each other.
+
+            <br><br>Here's how you can first create the wall, add both <code>BoxCollider</code> and be able to see them into your scene :
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Creating the wall and adding a trigger to the cube</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>void OnEngineLoad(EngineEntity engine, Scene scene)
+{
+    ...
+    <span class="cm">//Wall creation</span>
+    GameObject wall = GameObject.DefaultCube;
+    Transform wt = new Transform(new Vector3(1.5f, 1f, 2.5f), new Vector3(0f, 25f, 0f), new Vector3(6f, 2f, 0.5f));
+    wall.SetTransform(wt);
+    myScene.AddGameObject(wall);
+
+    <span class="cm">//Wall collider and Box trigger collider creation</span>
+    BoxCollider3D wallCollider = new BoxCollider3D(Vector3.One, Vector3.Zero, Vector3.Zero);
+    wall.AddComponent(wallCollider);
+
+    BoxCollider3D cubeTriggerCollider = new BoxCollider3D(Vector3.One, Vector3.Zero, Vector3.Zero, true);
+    cube.AddComponent(cubeTriggerCollider);
+
+    <span class="cm">//Enables drawing the colliders into the scene</span>
+    myScene.debugShowColliders = true;
+}</pre>
+        </div>
+
+
+
+        <div class="img-block">
+            <img src="Introduction/colliders.png" alt="The strawberry object added and placed in the scene">
+        </div>
+        <div class="img-caption">The wall and Box colliders correctly drawn into the scene</div>
+
+        <div class="callout info">
+            <div>The default cube returned by <code>GameObject.DefaultCube</code> is a standard cube of size (1,1,1). Since the base Collider size is also (1,1,1) and the collider size scales with the object's <code>Transform</code>, we can simply let the size of the collider
+            with <code>Vector3.One</code> be scaled with the Object directly. This may not always be true with your custom models tho. Colliders are also moved and rotated along the object's <code>Transform</code></div>
+        </div>
+
+        <p>
+            But only doing this don't allow collisions for the berry itself, and we can't just add a <code>SphereCollider3D</code>, colliders don't interacts with other colliders. (see <code>CollisionSystem</code>). We need to add one (or multiple) <code>CollisionDetector</code>
+            to our objects. Here, since the berry has a volume and a detector is a single point in space, we add 4 <code>CollisionDetector</code> (up, front, left and right) to the berry to register its collisions.
+
+            <br><br> We also add the trigger action invoke to the Cube, so when the berry interacts with it, the custom code is called :
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Creating the detectors and the OnTriggerEnter event</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>void OnEngineLoad(EngineEntity engine, Scene scene)
+{
+    ...
+    <span class="cm">//Creating the 4 detectors and adding them to the berry</span>
+    CollisionDetector berryFront = new CollisionDetector(3f, new Vector3(0f, 0f, 0.5f));
+    CollisionDetector berryBack = new CollisionDetector(3f, new Vector3(0f, 0f, -0.5f));
+    CollisionDetector berryLeft = new CollisionDetector(3f, new Vector3(0.5f, 0f, 0f));
+    CollisionDetector berryRight = new CollisionDetector(3f, new Vector3(-0.5f, 0f, 0f));
+    berry.AddComponent(berryFront);
+    berry.AddComponent(berryBack);
+    berry.AddComponent(berryLeft);
+    berry.AddComponent(berryRight);
+
+    <span class="cm">//Setting the trigger enter event that makes the cube turn red and the berry disappear</span>
+    cubeTriggerCollider.onTriggerEnter += (detector) =>
+    {
+        if (detector.gameObject.name == "Berry")
+        {
+            <span class="cm">//Access to the Material inside the MeshRenderer to update it</span>
+            cubeTriggerCollider.gameObject.GetComponent&lt;MeshRenderer&gt;().GetMaterial().Color = Color.Red.ToVector3();
+            detector.gameObject.Destroy();
+        }
+    };
+
+    myScene.debugShowColliders = false;
+}</pre>
+        </div>
+
+        <p>Now with this code added, you should be able to move the berry, make it collide and slide against the wall, and if it touches the cube, it disappears and the cube turns red.</p>
+
+        <hr class="divider" id="7">
+
+        <h2 class="noBorder"> 7. Adding UI </h2>
+
+        <p>
+            Now the next step will be to add a basic UI to the scene. <code>UICanvas</code> is the container for that, and it
+            comes in two modes, <code>Overlay</code>, which draws to the screen like a regular HUD, and <code>WorldSpace</code>, which places content as an actual panel inside the 3D scene. (More information on both on the <code>UICanvas</code> page).
+            <br><br> Each canvas can hold text with a <code>TextRenderers</code> or images with <code>UISprites</code>.
+            <br><br> We'll build one of each canvas type here, starting with an Overlay HUD with a title with a timer and a heart icon. (Find online a simple <b>PNG</b> heart icon and put it in your Textures folder)
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Building the Overlay HUD</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//Called from where you want, OnEngineLoad for example</span>
+void CreateUI()
+{
+    <span class="cm">//Screen space HUD, Overlay is the default canvasType (myScene variable was made global, easier to use)</span>
+    UICanvas hud = new UICanvas();
+    myScene.AddGameObject(hud);
+
+    <span class="cm">//Title with timer, centered at the top of the screen</span>
+    TextRenderer title = new TextRenderer();
+    title.textData.content = "Example scene | Playing since ";
+    title.textData.position = new Vector2(960f, 60f);
+    title.textData.fontSize = 70;
+    title.textData.shadow = true;
+    title.textData.shadowOffset = 2.5f;
+    hud.AddTextRenderer(title);
+
+    <span class="cm">//A little rotated heart icon on the right side of the screen</span>
+    UISprite heart = new UISprite("heart", new Vector2(1820,90), Vector2.One * 0.2f);
+    heart.SetRotation(45f);
+    hud.AddUISprite(heart);
+
+    <span class="cm">//Add the behaviour that counts time (see just below) to the HUD with the title renderer as a reference</span>
+    Timer timerIncrement = new Timer();
+    timerIncrement.text = title;
+    hud.AddComponent(timerIncrement);
+}
+
+<span class="cm">//Simple behaviour class that increments a timer</span>
+public class Timer : Behaviour
+{
+    public TextRenderer text;
+    float elapsed = 0f;
+
+    public override void Update(float deltaTime)
+    {
+        base.Update(deltaTime);
+        elapsed += deltaTime;;
+        text.textData.content = $"Example scene | Playing since  {(int)(elapsed / 60f)}:{(int)(elapsed % 60f)}";
+    }
+}</pre>
+        </div>
+
+        <div class="callout info">
+            <div>Overlay content is always positioned in a fixed 1920 by 1080 reference space, no matter your actual window resolution is. So <code>960:540</code> will always be in the center of the Canvas. See <code>UICanvas</code> page. </div>
+        </div>
+
+
+        <div class="callout info">
+            <div>Fonts can be changed up by placing them in your Fonts folder. Detailled informations in the <code>TextRenderer</code> or <code>EnginePaths</code> pages.</div>
+        </div>
+
+        <p>
+            Now for the WorldSpace canvas. Instead of screen coordinates, this one lives in the 3D scene itself, using to its own <code>Transform</code>. So we can position that <code>Transform</code> just above the berry and keep it there as the berry moves.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">A nameplate that follows the berry</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>void CreateUI()
+{
+    ...
+
+    <span class="cm">//Creating the WorldSpace Canvas and the nameplate</span>
+    UICanvas berryNameplate = new UICanvas { canvasType = CanvasType.WorldSpace };
+    berryNameplate.transform.SetPosition(berry.transform.Position + new Vector3(0f, 1f, 0f));
+    berryNameplate.transform.SetRotation(new Vector3(0f, 180f, 0f));
+    myScene.AddGameObject(berryNameplate);
+
+    <span class="cm">//Adds the title to the nameplate canvas</span>
+    TextRenderer berryName = new TextRenderer();
+    berryName.textData.content = "Berry";
+    berryName.textData.fontSize = 80;
+    berryName.textData.mainColor = Color.Red;
+    berryNameplate.AddTextRenderer(berryName);
+
+    <span class="cm">//Keeps the canvas above the berry every frame (see behaviour just below). berry was also made global.</span>
+    FollowTarget follow = new FollowTarget();
+    follow.target = berry;
+    follow.offset = new Vector3(0f, 1f, 0f);
+    berryNameplate.AddComponent(follow);
+}
+
+<span class="cm">//Keeps this GameObject's Transform follow a target, plus an offset</span>
+public class FollowTarget : Behaviour
+{
+    public GameObject target;
+    public Vector3 offset;
+
+    public override void Update(float deltaTime)
+    {
+        base.Update(deltaTime);
+
+        <span class="cm">//While the berry is not destroyed, move the nameplate over it. If it's destroyed, destroy the Canvas too</span>
+        if (target != null && !target.IsDestroyed)
+            transform.SetPosition(target.transform.Position + offset);
+
+        else
+            gameObject.Destroy();
+    }
+}</pre>
+        </div>
+
+        <div class="callout warn">
+            <div>The <code>FollowTarget.Update</code> is a good example on how to access <code>GameObject</code> properties. Before doing so, ALWAYS check if the object is not null and not already destroyed with <code>IsDestroyed</code>,
+            otherwise you may get null reference exceptions. Even if the object is not null, it can already have been destroyed sooner this frame and some properties may become null in this case.</div>
+        </div>
+
+        <div class="img-block">
+            <img src="Introduction/UI.png" alt="The Berry nameplate floating above the berry in the scene">
+        </div>
+        <div class="img-caption">A Title, timer, heart and a "Berry" floating above the berry, following it as it moves</div>
+
+        <p>Move the berry around now, the nameplate should stick right above it the whole time, while the HUD stays put on screen regardless of where the camera or the berry go. The "Berry" nameplate can even be hidden by the wall if the berry goes behind it.</p>
+
+        <hr class="divider" id="8">
+
+
+        <p>Now, the base tutorial is finished, you know the basics of the Engine and how to use its scenes. The pages <a href="Introduction/Persistence.html">Engine Persistence</a> and <a href="Introduction/SaveStates.html">Prevent Savestates crashes</a> provides useful
+            informations that are also recommended to know.</p>
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

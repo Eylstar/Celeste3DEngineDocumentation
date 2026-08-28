@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DebugDrawShapes3D</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>DebugDrawShapes3D</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Class </span>
+            <span class="tag"> Static </span>
+        </div>
+
+        <p><code>DebugDrawShapes3D</code> is a static utility class for drawing wireframe shapes directly in 3D space (boxes, spheres and lines).
+            It's what <code>BoxCollider3D</code> and <code>SphereCollider3D</code> use internally for their own <code>DrawShapeDebug()</code>, and what a custom <code>Collider3D</code> should use too, see the <code>Collider3D</code> page for an example.
+            <br>It's public, so you can also call it yourself for your own debug visuals, outside of a Collider entirely.
+            <br><br> Every method takes a <code>Camera3D</code>, used to build the view and projection matrices for that one draw call, and every coordinate you pass in is expected in world space.
+        </p>
+
+        <div class="callout warn">
+            <div>These draw immediately to whatever render target is currently active, they aren't batched or deferred. Call them from <code>Render()</code>,
+                the same phase the Engine's own debug drawing uses, not from <code>Update()</code>, where the active render target isn't guaranteed to be the right one yet.</div>
+        </div>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Drawing your own debug shapes</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre>public class PatrolPathDebug : Behaviour
+{
+    public Vector3 pointA, pointB;
+
+    public override void Render()
+    {
+        base.Render();
+        Camera3D cam = scene.GetRenderingCamera();
+
+        <span class="cm">//A line between two patrol points, and a sphere marking each end</span>
+        DebugDrawShapes3D.DrawLine(pointA, pointB, cam, Color.Yellow);
+        DebugDrawShapes3D.DrawSphere(pointA, 0.2f, cam, Color.Yellow);
+        DebugDrawShapes3D.DrawSphere(pointB, 0.2f, cam, Color.Yellow);
+
+        <span class="cm">//A box marking a trigger zone, rotated 45° around Y</span>
+        Quaternion rot = Quaternion.CreateFromAxisAngle(Vector3.Up, MathHelper.ToRadians(45f));
+        DebugDrawShapes3D.DrawBox(new Vector3(0f, 1f, 0f), new Vector3(2f, 1f, 2f), rot, cam, Color.Cyan);
+    }
+}</pre>
+        </div>
+
+        <hr class="divider">
+
+        <h2> Methods </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Method</th>
+                <th>Return type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">DrawBox(Vector3 center, Vector3 size, Quaternion rotation, Camera3D cam, Color color)</span></td>
+                <td><span class="prop-type">static void</span></td>
+                <td>Draws a wireframe box, center in world space</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">DrawSphere(Vector3 center, float radius, Camera3D cam, Color color)</span></td>
+                <td><span class="prop-type">static void</span></td>
+                <td>Draws a wireframe sphere, (three circles around the center, one per axis)</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">DrawLine(Vector3 start, Vector3 end, Camera3D cam, Color color)</span></td>
+                <td><span class="prop-type">static void</span></td>
+                <td>Draws a single line between two world space points</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

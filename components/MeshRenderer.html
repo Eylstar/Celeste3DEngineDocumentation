@@ -1,0 +1,221 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeshRenderer</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>MeshRenderer</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Class </span>
+            <span class="tag"> Component </span>
+        </div>
+
+        <p>The <code>MeshRenderer</code> is the Component used for rendering 3D models. It's the only Component a <code>GameObject</code> can hold a single instance of, and it's what allows a <code>GameObject</code> to actually show up in the scene.
+            <br><br> Which constructor you use depends on your model format. Passing only a model name creates a GLB MeshRenderer (texture is embedded in the file), while passing a model name and a texture name creates an OBJ MeshRenderer (texture is loaded separately).
+        </p>
+
+        <div class="callout info">
+            <div>Prefer using GLB models over OBJ ones. They are easier to use, can hold multiple textures, and are way more optimized. OBJ and exports are better suited if you have a simple / single texture object who needs its texture changed at runtime with an external png.</div>
+        </div>
+
+        <div class="callout warn">
+            <div>The Format (OBJ/GLB) cannot be changed once the <code>MeshRenderer</code> is created.</div>
+        </div><p>
+
+            <br> The <code>ModelLayer</code> passed to the constructor decides where this model belongs in the scene : <code>World</code> for regular scenery, <code>Foreground</code> for elements rendered in front of everything else, <code>HUD</code> for screen-space elements, and <code>Skybox</code>, reserved for the scene's Skybox.
+        </p>
+
+
+
+        <p>
+            Each <code>MeshRenderer</code> also holds a <code>Material</code> instance, which controls how the Model's surface looks : its color, how it reacts to lighting, and whether it emits light of its own. If none is set, the Model uses the Engine's DefaultMaterial. Use <code>GetMaterial()</code> and <code>SetMaterial()</code> to read or change it.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Basic MeshRenderer usage</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//Creates a GLB MeshRenderer and adds it to a GameObject</span>
+GameObject rock = new GameObject("Rock");
+rock.AddComponent(new MeshRenderer("rock"));
+
+<span class="cm">//Creates an OBJ MeshRenderer with a separate texture</span>
+GameObject crate = new GameObject("Crate");
+crate.AddComponent(new MeshRenderer("crate", "crate_texture"));
+
+<span class="cm">//Changes the model and layer at runtime</span>
+MeshRenderer renderer = crate.GetComponent&lt;MeshRenderer&gt;();
+renderer.ChangeModel("crate_broken");
+renderer.ChangeLayer(ModelLayer.Foreground);
+
+<span class="cm">//Creates a new Material and assigns it to the MeshRenderer</span>
+Material mat = new Material();
+mat.Shininess = 3f;
+mat.tint = new Vector3(0.8f, 0.8f, 0.8f);
+crate.GetComponent&lt;MeshRenderer&gt;().SetMaterial(mat);</pre>
+        </div>
+
+        <div class="callout info">
+            <div>Setting <code>isVisible</code> to false stops the Model from rendering, but it will still cast shadows if <code>castsShadows</code> is true. Use both together if you want a Model to be completely absent from the scene.</div>
+        </div>
+
+        <hr class="divider">
+
+
+        <h2> Layer Properties Details </h2>
+
+        <p>The Layer of the object works a bit differently, depending if you're in <code>IsHDMode</code> or not (see <code>Renderer3D</code>), especially if you want to mix 3D rendering and Celeste base Rendering. <br><br>
+            In non HD mode (or pixel art rendering) the <code>World</code> Layer draws objects beetween the stylegrounds and the Celeste rendering, and the <code>Foreground</code> above the Celeste rendering, under some additional Celeste visual effects. <br>
+            <br>In HD mode, <code>World</code> renders behind everything except the <code>Skybox</code>, including stylegrounds, and <code>Foreground</code> renders above eveything. This is due to IL hooking and
+            3D pipeline limitations.
+            <br><br> <code>HUD</code> in both cases renders above everything else. This is useful if you want to display models in a set position of the screen. Instanciating an HUD model is done with Screen-space coordinates,
+            adjusted for a 1920x1080 screen with <code>Scene3D.AddHUDObject</code>. Your screen resolution doesn't matter here, just use a 1920x1080 ratio (for example 960:540 will always be in the middle) and the Z value represents how close of the screen the object will be.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Creation of an HUD model</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+<pre><span class="cm">//Create and place a compass in the bottom center of the screen</span>
+compass = new GameObject(new Vector3(960, 950, 180), Vector3.Zero, Vector3.One * 50f);
+compass.AddComponent(new MeshRenderer("compassModel"));
+mainScene.AddHUDObject(compass);</pre>
+        </div>
+        <div class="callout info">
+            <div><code>Scene3D.AddHUDObject</code> automatically sets the Layer to <code>HUD</code> when the object is Added if a <code>MeshRenderer</code> was found (if not, it returns an error). The Layer still can be changed later at runtime.</div>
+        </div>
+
+        <p>And the <code>Skybox</code> Layer is only used for the <code>Skybox</code>. It's not recommended to use it for anything else.</p>
+
+        <h2 class> Constructors </h2>
+
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Declaration</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">MeshRenderer(string modelName, ModelLayer modelLayer = ModelLayer.World)</span></td>
+                <td>Creates a new GLB MeshRenderer with the given model name</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">MeshRenderer(string modelName, string textureName, ModelLayer modelLayer = ModelLayer.World)</span></td>
+                <td>Creates a new OBJ MeshRenderer with the given model and texture names</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">MeshRenderer(string modelName, Material mat, ModelLayer modelLayer = ModelLayer.World)</span></td>
+                <td>Creates a new GLB MeshRenderer with the given model name, and sets the material</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">MeshRenderer(string modelName, string textureName, Material mat, ModelLayer modelLayer = ModelLayer.World)</span></td>
+                <td>Creates a new OBJ MeshRenderer with the given model and texture names, and sets the material</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <hr class="divider">
+
+        <h2> Properties </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">castsShadows</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether this Model casts shadows, default true</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">receivesShadows</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether this Model receives shadows, default true</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">isFrustumCulled</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether this Model should be automatically culled and not rendered when outside the frustum of the rendering camera, default true</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">isVisible</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether this Model is visible, setting this to false stops it from rendering, default true</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h2> Methods </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Method</th>
+                <th>Return type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">ChangeTexture(string newTexturePath)</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Changes the texture of this Model at runtime (only for OBJ models)</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">ChangeModel(string newModelPath)</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Changes the model of this Model at runtime</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">ChangeLayer(ModelLayer newLayer)</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Changes the layer of this Model at runtime</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">GetMaterial()</span></td>
+                <td><span class="prop-type">Material</span></td>
+                <td>Returns the Material of this Object</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">SetMaterial(Material mat)</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Sets the material for this Model, passing null resets it to the DefaultMaterial</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">GetLayer()</span></td>
+                <td><span class="prop-type">ModelLayer</span></td>
+                <td>Returns the layer of this Model</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">GetFormat()</span></td>
+                <td><span class="prop-type">ModelFormat</span></td>
+                <td>Returns the format of this Model</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

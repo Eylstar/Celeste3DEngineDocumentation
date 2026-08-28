@@ -1,0 +1,113 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollisionSystem</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>CollisionSystem</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Class </span>
+            <span class="tag"> Internal </span>
+        </div>
+
+        <p>The <code>CollisionSystem</code> is what actually detects and resolves collisions for a Scene, but unlike <code>Renderer3D</code> you never get a reference to it, it's fully internal. This page exists to explain how it works, so <code>Collider3D</code>, <code>CollisionDetector</code> and <code>RayCast</code> make sense once you start using them.
+        </p>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Colliders vs Detectors </h2>
+
+        <p>
+            The system splits collision into two separate roles, and every object involved in physics needs to be one, the other, or both.
+            <br><br> A <code>Collider3D</code> is the obstacle, a wall, the ground, a pillar. It defines a shape in space
+            and is never moved or pushed by the collision system. The Collider still move if his <code>GameObject</code> does.
+            <br><br> A <code>CollisionDetector</code> is the thing that experiences collisions, the player, an enemy, anything that should be stopped by walls or notified when it touches something.
+            It's the <code>CollisionDetector</code> that gets pushed out and moved, never the <code>Collider3D</code>.
+            <br><br> Two Colliders never interact with each other, and two Detectors never interact with each other either. Only <code>Collider3D</code> against <code>CollisionDetector</code> produces a collision / trigger call.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">A wall and a player</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//The wall is the obstacle</span>
+GameObject wall = new GameObject("Wall");
+BoxCollider3D wallCol = new BoxCollider3D(new Vector3(10f, 4f, 1f), Vector3.Zero);
+wall.AddComponent(wallCol);
+
+<span class="cm">//The player is what gets stopped by it</span>
+GameObject player = new GameObject("Player");
+CollisionDetector detector = new CollisionDetector(distanceToCheck: 1.5f);
+player.AddComponent(detector);
+myScene.AddGameObject(player);
+
+<span class="cm">//Both sides can react to the same collision with an embeded collision parameter :</span>
+detector.onCollision += (col) => Logger.Info("Game", $"{detector.gameObject.name} bumped into {col.gameObject.name}");
+<span class="cm">//or</span>
+wallCol.onCollision += (det) => Logger.Info("Game", $"{det.gameObject.name} bumped into {wallCol.gameObject.name}"); </pre>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Trigger Enter, Stay and Exit </h2>
+
+        <p>
+            A <code>Collider3D</code> can be set as a Trigger one with <code>isTrigger</code> set to true, and it doesn't push anything, it only fires events. <code>onTriggerEnter</code> fires the first frame a Detector is found inside it, <code>onTriggerStay</code> fires every frame after that while it remains inside, and <code>onTriggerExit</code> fires the frame it's no longer detected inside.
+            <br><br> If a trigger Collider or an entire <code>GameObject</code> gets destroyed while a <code>CollisionDetector</code> is still inside it, a matching <code>onTriggerExit</code> is fired first, so Enter and Exit always come in pairs, even if something disappears mid overlap.
+        </p>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Broadphase with a Spatial Hash Grid </h2>
+
+        <p>
+            The scene is divided into a grid of fixed size cells, 10 units per cell.
+            Every Collider3D is inserted into every cell its bounds touch. Every frame, each CollisionDetector only queries the cells within its own <code>distanceToCheck</code> radius,
+            instead of testing against every Collider in the scene.
+            <br><br>The <code>distanceToCheck</code> isn't a broadphase shortcut, it's the actual maximum distance allowed between the Detector's position and a Collider's surface before that Collider gets tested, checked  against each Collider's, not just which cell it's in.
+            Set it too small and a Collider that's genuinely a bit further away than the Detector's own size won't be detected, even one sitting right next to it in the same cell. Set it too large and nothing breaks, it just checks more Colliders than it needs to every frame.
+        </p>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Dirty Flags and Caching </h2>
+
+        <p>
+            Colliders aren't reinserted into the grid every frame, they stay in their cells until something marks them dirty. Moving, rotating or scaling a GameObject through its <code>Transform</code> does this automatically, so does toggling a Collider3D's <code>enabled</code> or changing its <code>CenterOffset</code>.
+            <code>BoxCollider3D</code>'s own <code>size</code> and <code>rotation</code> properties do it too. Only dirty colliders get their grid position and shape cache recalculated each frame.
+        </p>
+
+        <div class="callout warn">
+            <div>If you write a custom Collider3D with fields that affect its shape, call <code>MarkColliderDirty()</code> when a change occurs, otherwise the spatial grid and any cached shape data won't necessarily reflect your changes.</div>
+        </div>
+
+
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Debugging </h2>
+
+        <p>
+            Setting <code>Scene3D.debugShowColliders</code> to true draws wireframes for Colliders and debug spheres for Detectors, <code>debugShowRayCasts</code> does the same for raycasts. Set <code>debugShowOnlyCollidersInRange</code> at true
+            if you want only the loaded colliders (by a detector) to show. Useful to test the detection range of a detector.
+        </p>
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

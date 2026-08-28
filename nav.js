@@ -3,7 +3,7 @@ const SITE = {
     name:    "Celeste",
     nameAccent: "3D",
     name2: "Engine",
-    version: "v0.4.0",
+    version: "v1.1.0",
     base: ""
 }
 
@@ -11,12 +11,10 @@ const NAV = [
     {
         section: "Getting Started",
         items: [
-            { label: "What is Celeste3DEngine",   href: "introduction.html" },
-            { label: "Installation and folders",   href: "installation.html" },
-            { label: "Loading the Engine", href: "premier-projet.html" },
-            { label: "Scene Creation and Rendering", href: "premier-projet.html" },
-            { label: "Adding Custom Logic", href: "premier-projet.html" },
-            { label: "(Advanced) Engine Persistence", href: "premier-projet.html" },
+            { label: "What is Celeste3DEngine",   href: "Introduction/TheEngine.html" },
+            { label: "Your first Project",   href: "Introduction/Introduction.html" },
+            { label: "Engine Persistence",   href: "Introduction/Persistence.html" },
+            { label: "Prevent Savestate Crashes",   href: "Introduction/SaveStates.html" },
         ]
     },
     {
@@ -24,64 +22,65 @@ const NAV = [
         items: [
             { label: "EngineEntity", href: "engine/EngineEntity.html" },
             { label: "Scene3D",     href: "engine/Scene3D.html" },
-            { label: "EnginePaths",    href: "camera.html" },
-            { label: "EngineCallbacks",    href: "camera.html" },
+            { label: "EnginePaths",    href: "engine/EnginePaths.html" },
+            { label: "EngineCallbacks",    href: "engine/EngineCallbacks.html" },
         ]
     },
     {
         section: "GAMEOBJECT COMPONENTS",
         items: [
-            { label: "GameObject",   href: "renderer.html" },
-            { label: "Transform",    href: "shaders.html" },
-            { label: "MeshRenderer",  href: "materiaux.html" },
-            { label: "Material",   href: "lumieres.html" },
-            { label: "Behaviour",   href: "lumieres.html" },
-            { label: "AnimationPlayer",   href: "lumieres.html" },
-            { label: "AudioSource",   href: "lumieres.html" },
+            { label: "GameObject",   href: "components/GameObject.html" },
+            { label: "Transform",    href: "components/Transform.html" },
+            { label: "MeshRenderer",  href: "components/MeshRenderer.html" },
+            { label: "Material",   href: "components/Material.html" },
+            { label: "Behaviour",   href: "components/Behaviour.html" },
+            { label: "AnimationPlayer",   href: "components/AnimationPlayer.html" },
+            { label: "AudioSource",   href: "components/AudioSource.html" },
         ]
     },
     {
         section: "RENDERING",
         items: [
-            { label: "Renderer3D",   href: "renderer.html" },
-            { label: "Camera3D",    href: "shaders.html" },
-            { label: "Skybox",  href: "materiaux.html" },
+            { label: "Renderer3D",   href: "rendering/Renderer3D.html" },
+            { label: "Camera3D",    href: "rendering/Camera3D.html" },
+            { label: "Skybox",  href: "rendering/Skybox.html" },
+            { label: "DebugDrawShapes3D",  href: "rendering/DebugDrawShapes3D.html" },
         ]
     },
     {
         section: "PHYSICS",
         items: [
-            { label: "Collider3D",  href: "rigidbody.html" },
-            { label: "BoxCollider3D",  href: "colliders.html" },
-            { label: "SphereCollider3D", href: "raycasting.html" },
-            { label: "CollisionDetector", href: "raycasting.html" },
-            { label: "RayCast", href: "raycasting.html" },
-            { label: "DebugDrawShapes3D", href: "raycasting.html" },
+            { label: "CollisionSystem", href: "physics/CollisionSystem.html" },
+            { label: "Collider3D",  href: "physics/Collider3D.html" },
+            { label: "BoxCollider3D",  href: "physics/BoxCollider3D.html" },
+            { label: "SphereCollider3D", href: "physics/SphereCollider3D.html" },
+            { label: "CollisionDetector", href: "physics/CollisionDetector.html" },
+            { label: "RayCast & Ray", href: "physics/RayCast.html" },
+            { label: "RayCastHit", href: "physics/RayCastHit.html" },
+
         ]
     },
     {
         section: "UI",
         items: [
-            { label: "UICanvas",           href: "api-classes.html" },
-            { label: "UISprite",             href: "api-enums.html" },
-            { label: "TextRenderer", href: "api-fonctions.html" },
-            { label: "TextData", href: "api-fonctions.html" },
+            { label: "UICanvas",           href: "UI/UICanvas.html" },
+            { label: "UISprite",             href: "UI/UISprite.html" },
+            { label: "TextRenderer", href: "UI/TextRenderer.html" },
+            { label: "TextData", href: "UI/TextData.html" },
         ]
     },
     {
         section: "Lighting",
         items: [
-            { label: "LightingSettings",           href: "api-classes.html" },
-            { label: "Light",             href: "api-enums.html" },
-            { label: "ConeLight", href: "api-fonctions.html" },
-            { label: "PointLight", href: "api-fonctions.html" },
+            { label: "LightingSettings",           href: "lighting/LightingSettings.html" },
+            { label: "Lights (Cone and Point)",             href: "lighting/Lights.html" },
         ]
     },
     {
         section: "Misc",
         items: [
-            { label: "ExportGenerator",           href: "api-classes.html" },
-            { label: "FloorHeightMap",             href: "api-enums.html" },
+            { label: "FloorHeightMap",           href: "misc/FloorHeightMap.html" },
+            { label: "ExportGenerator",             href: "misc/ExportGenerator.html" },
         ]
     },
 ]
@@ -126,6 +125,15 @@ function renderNav() {
       `).join("")}
     </div>
   `).join("")
+
+    const savedScroll = sessionStorage.getItem("navScrollPos")
+    if (savedScroll !== null) {
+        aside.scrollTop = parseInt(savedScroll, 10)
+    }
+
+    aside.addEventListener("scroll", () => {
+        sessionStorage.setItem("navScrollPos", aside.scrollTop)
+    })
 }
 
 

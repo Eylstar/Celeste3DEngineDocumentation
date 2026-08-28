@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skybox</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>Skybox</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Class </span>
+            <span class="tag"> Inherits from GameObject </span>
+        </div>
+
+        <p><code>Skybox</code> is the GameObject that renders the sky of the scene, using a default sky texture. Every <code>Scene3D</code> creates and manages its own automatically when it loads,
+            its constructor is internal, so you never create one yourself. You control it with <code>Scene3D.EnableSkybox()</code> and <code>Scene3D.ChangeSkyBox()</code>.
+        </p>
+
+        <div class="callout warn">
+            <div>Calling <code>Destroy()</code> on the Skybox does nothing, it just logs a warning. Use <code>Scene3D.EnableSkybox(false)</code> instead if you want to hide it.</div>
+        </div>
+
+        <p>
+            By default the Skybox renders as part of the World pass, alongside your regular World layer models. Setting <code>foregroundRendererEnabled</code>
+            to true makes it render as part of the Foreground pass instead. Check the <code>MeshRenderer</code> and <code>Renderer3D</code> page for how these two passes fit into the rendering pipeline.
+        <br><br></p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Basic Skybox usage</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//Disable the skybox entirely</span>
+myScene.EnableSkybox(false);
+
+<span class="cm">//Change its texture</span>
+myScene.ChangeSkyBox("night_sky");
+
+<span class="cm">//Get the Skybox itself to change its render pass</span>
+Celeste3DEngine.Skybox sky = myScene.GetSkybox;
+sky.foregroundRendererEnabled = true;</pre>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder">Skybox Texture's Cubemap </h2>
+
+        <p>
+            The Skybox isn't a special rendering mode, it's a regular cube model with a huge scale and fixed on the main rendering <code>Camera3D</code> position, rendered with a single flat texture like any other <code>MeshRenderer</code>, but inside out.
+            The <code>SkyBox</code> texture is just one texture laid out to wrap around all six faces of that cube, the same way you'd unfold a cardboard box flat before folding it back up. </p>
+
+        <div class="callout info">
+            <div>You can go see the default SkyBox texture directly in the Engine mod content, at <code>Graphics/3DEngine/DefaultTextures/sky.png</code>.</div>
+        </div>
+        <p>
+            Whatever texture you pass to <code>ChangeSkyBox()</code> has to follow that exact same layout, each of the six faces in the same position and orientation the default sky texture uses, or the sky will look broken with seams in the wrong place.
+        </p>
+
+        <div class="img-block">
+            <img src="rendering/skyboxScheme.png" alt="Six sided skybox texture layout">
+        </div>
+        <div class="img-caption">The six sided net a skybox texture needs to follow</div>
+
+        <p>
+            There's two practical ways to get a texture in this layout. Plenty of free online downloadable skybox cubemaps already exists. Also, tools that convert a 360° panorama or an HDRI into a six sided cross layout automatically,
+            or even procedurally generates ones also are easy to find. The other option is building the net yourself, painting or compositing each of the six faces directly following the template above.
+        </p>
+
+        <hr class="divider">
+
+        <h2> Properties </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">foregroundRendererEnabled</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether the Skybox renders as part of the Foreground pass instead of the World pass, default false</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

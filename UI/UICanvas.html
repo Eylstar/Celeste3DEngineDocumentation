@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UICanvas</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>UICanvas</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Class </span>
+            <span class="tag"> Inherits from GameObject </span>
+        </div>
+
+        <p><code>UICanvas</code> is a container for UI content, <code>TextRenderer</code> and <code>UISprite</code> instances live on one. you can see the <code>UICanvas</code> as a 2D placeholder in which you can place graphic elements.
+            It inherits from <code>GameObject</code>, so it's added to a Scene like anything else, with <code>AddGameObject()</code>.
+            <br><br> A Scene can hold as many Canvases as you want, and each one is independently either <code>Overlay</code> or <code>WorldSpace</code>, set through <code>canvasType</code>. This single choice changes almost everything about how its content behaves.
+        </p>
+
+
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Overlay vs WorldSpace </h2>
+
+        <p>
+            An <b>Overlay</b> Canvas draws straight to the screen, on top of everything (the 3D scene and the rest of Celeste's own rendering). Its content isn't positioned in a real resolution either,
+            it uses a fixed 1920 by 1080 reference space that gets uniformly scaled and centered to fit whatever the actual window size is.
+            <br>This means <code>(960, 540)</code> is always the center of the screen, and the same coordinates look the same relative to the screen no matter what resolution the player is running at,
+            you never have to do that math yourself. The Canvas's own <code>Transform</code> is completely ignored for this type, only the position, scale and rotation of each individual <code>TextRenderer</code> or <code>UISprite</code> on it matters.
+
+            <br><br> A <b>WorldSpace</b> Canvas is the opposite, it's a flat panel that actually exists in the 3D scene, anchored at the Canvas GameObject's own <code>Transform</code>.
+            Its Right and Up directions become the panel's local axes, and every piece of content on it is positioned as a 2D offset along those axes, scaled by the Canvas's own uniform scale.
+            <br>It's rendered as real geometry alongside your models, which means it respects depth. A wall or a character standing between the camera and a WorldSpace Canvas will hide it, the same way it would hide a model.
+
+        </p><div class="callout info">
+            <div>Moving, rotating or scaling a WorldSpace Canvas's Transform marks every TextRenderer and UISprite on it dirty at once, they all rebuild together next frame. This makes the Canvas itself a convenient handle to move an entire group of UI content together, a whole floating panel above an enemy, for example, without touching each piece individually.</div>
+        </div><p>
+            <br> Use <code>Overlay</code> for anything that belongs to the player's screen, HUD elements, menus, anything that should always be visible. <br>Use <code>WorldSpace</code> for anything that belongs to the scene itself, a floating nameplate above a character, a sign, a damage number that appears where something happened.
+
+
+        <div class="callout info">
+            <div>Your WorldSpace Canvas will behave with the models geometry only if it's in the same Layer. All models layer are by default on "World" layer and not foreground, so does the Canvas. If you rendered models in foreground, or want the
+                world canvas to render above everything in your scene while being not in Overlay mode, you can change <code>isRendererInForeground</code>.</div>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Adding Content </h2>
+
+        <p>
+            A Canvas doesn't create its content for you, you build a <code>TextRenderer</code> or a <code>UISprite</code> yourself and attach it with <code>AddTextRenderer()</code> or <code>AddUISprite()</code>. <code>ClearCanvas()</code> removes and disposes everything at once, useful when tearing down a whole piece of UI.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">An Overlay HUD and a WorldSpace nameplate</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//An Overlay canvas, screen space, always visible, with a score text and a heart icon</span>
+UICanvas hud = new UICanvas();
+
+TextRenderer scoreText = new TextRenderer();
+scoreText.textData.content = "Score: 0";
+scoreText.textData.position = new Vector2(100f, 60f);
+hud.AddTextRenderer(scoreText);
+
+UISprite heartIcon = new UISprite("icons/heart", new Vector2(60f, 60f));
+hud.AddUISprite(heartIcon);
+
+<span class="cm">//A WorldSpace canvas, anchored above an enemy in the scene</span>
+UICanvas nameplateCanvas = new UICanvas();
+nameplateCanvas.canvasType = CanvasType.WorldSpace;
+nameplateCanvas.transform.SetPosition(enemy.transform.Position + new Vector3(0f, 2.5f, 0f));
+
+TextRenderer nameLabel = new TextRenderer();
+nameLabel.textData.content = "Slime";
+nameLabel.textData.fontSize = 24;
+nameplateCanvas.AddTextRenderer(nameLabel);
+
+UISprite skullIcon = new UISprite("icons/skull", new Vector2(0f, -40f));
+nameplateCanvas.AddUISprite(skullIcon);</pre>
+        </div>
+
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Constructor</h2>
+
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Declaration</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">UICanvas()</span></td>
+                <td>Creates an empty Canvas, overlay by default</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <hr class="divider">
+
+        <h2> Properties </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">canvasType</span></td>
+                <td><span class="prop-type">CanvasType</span></td>
+                <td>Whether this Canvas draws as screen space Overlay or as a panel in the 3D scene. Default Overlay</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">isRendererInForeground</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Only active if the canvasType is WorldSpace. Decides wether this should be drawn in the world or foreground render target. Default false</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <h2> Methods </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Method</th>
+                <th>Return type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">AddTextRenderer(TextRenderer textRenderer)</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Adds a TextRenderer to the Canvas</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">AddUISprite(UISprite sprite)</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Adds a UISprite to the Canvas</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">RemoveTextRenderer(TextRenderer textRenderer)</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Removes a TextRenderer from the Canvas</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">RemoveUISprite(UISprite sprite)</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Removes a UISprite from the Canvas</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">ClearCanvas()</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Removes and disposes every TextRenderer and UISprite on the Canvas</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">GetTextRenderers()</span></td>
+                <td><span class="prop-type">IReadOnlyList&lt;TextRenderer&gt;</span></td>
+                <td>Returns a ReadOnly List of all the TextRenderers on this Canvas</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">GetUISprites()</span></td>
+                <td><span class="prop-type">IReadOnlyList&lt;UISprite&gt;</span></td>
+                <td>Returns a ReadOnly List of all the UISprites on this Canvas</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>

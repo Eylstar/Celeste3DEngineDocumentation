@@ -75,7 +75,7 @@ void SetupScene()
         <p>Just like in Unity and other Engines, there is some built-in functions for searching and getting a <code>GameObject</code> reference. <br> Each <code>GameObject</code> possess a name and a tag. Both are by default set as an empty string,
         but you can change them with <code>GameObject.SetName()</code> and <code>GameObject.SetTag()</code>, or, for the name, specify it in the constructor when you create the object.
             <br><br> You can find and filter objects using these names and tags. Also, if you want to search specifically for Objects with a known <code>Behaviour</code> attached to it, you can filter the search by Type. (Behaviour are components like <code>AnimationPlayer</code>
-            or any of you classes that inherits <code>Behaviour</code>).
+            or any of you classes that inherits <code>Behaviour</code>, see more in the <code>Behaviour</code> page).
         </p>
 
         <div class="code-block">
@@ -112,11 +112,11 @@ List&lt;GameObject&gt; movingEnemies = scene.FindAllByType&lt;EnemyMovement&gt;(
         The <code>Scene3D</code> also places and set its Skybox with the default sky Texture and initialize its <code>CollisionSystem</code> and <code>Renderer3D</code>.</p>
 
         <div class="callout info">
-            <div><code>Skybox.Destroy()</code> is disabled by default. If you don't want to use a Skybox, use <code>EnableSkybox(false)</code> directly in your scene.</div>
+            <div><code>Skybox.Destroy()</code> is disabled by default. If you don't want to use a Skybox, use <code>Scene3D.EnableSkybox(false)</code> directly in your scene.</div>
         </div>
 
         <p>Then, the Scene3D will call the <code>OnSceneLoad</code> event, that you can use to invoke code at this precise moment. And finally,
-            <code>Start()</code> will be called on every <code>GameObject</code> that was added before the scene was loaded.</p>
+            <code>Start()</code> will be called on every <code>GameObject</code> that was added before scene load, on the following Update tick.</p>
 
         <div class="callout warn">
             <div>Note that the <code>Behaviour</code> functions <code>Added()</code> will be called at the exact moment the object is added, even if it's before the scene load.
@@ -145,11 +145,31 @@ List&lt;GameObject&gt; movingEnemies = scene.FindAllByType&lt;EnemyMovement&gt;(
         </p>
 
         <div class="callout info">
-            <div>This loop is named render to follow Monocle/Celeste namings, even if here no real rendering is done. This loop is called
+            <div>This loop is named <code>Render()</code> to follow Monocle/Celeste namings, even if here no real rendering is done. This loop is called
                 exactly when the Celeste entities <code>Render()</code> code is called. It's the same as Update, called at the Celeste tick rate from <code>EngineEntity</code>. <br> If you need to visually debug things or draw a sprite at the moment <code>Render()</code> would be called in a celeste entity, it can be useful, like for the
                 collider and raycast debug draws, since it will always be drawn over the 3D World (in Celeste Entity.Render is called after Level.Render)
             </div>
         </div>
+
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Constructors </h2>
+
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Declaration</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">Scene3D()</span></td>
+                <td>Creates a new 3D Scene</td>
+            </tr>
+            </tbody>
+        </table>
 
         <hr class="divider">
 
@@ -168,6 +188,11 @@ List&lt;GameObject&gt; movingEnemies = scene.FindAllByType&lt;EnemyMovement&gt;(
                 <td><span class="prop-name">debugShowColliders</span></td>
                 <td><span class="prop-type">bool</span></td>
                 <td>Decides if Colliders and Collision Detectors are shown (Wireframes)</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">debugShowOnlyCollidersInRange</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>If debugShowColliders is true, decides if the colliders shown are the ones loaded by a detector or all the colliders</td>
             </tr>
             <tr>
                 <td><span class="prop-name">debugShowRayCasts</span></td>
@@ -202,6 +227,11 @@ List&lt;GameObject&gt; movingEnemies = scene.FindAllByType&lt;EnemyMovement&gt;(
                 <td><span class="prop-name">GetLightingSettings</span></td>
                 <td><span class="prop-type">LightingSettings</span></td>
                 <td>Returns the LightingSettings used in the scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">GetSkybox</span></td>
+                <td><span class="prop-type">Skybox</span></td>
+                <td>Returns the Skybox object used in the scene</td>
             </tr>
             <tr>
                 <td><span class="prop-name">GetGameObjectsList</span></td>

@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollisionDetector</title>
+    <base href="/Celeste3DEngineDocumentation/">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="berry.ico">
+</head>
+<body>
+<header></header>
+
+<div class="layout">
+    <aside></aside>
+    <main>
+        <h1>CollisionDetector</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Class </span>
+            <span class="tag"> Component </span>
+        </div>
+
+        <p><code>CollisionDetector</code> only experiences collisions and can't cause them. See the <code>CollisionSystem</code> page for the full picture of how it works together with <code>Collider3D</code>. Added to a GameObject like any other component with <code>AddComponent()</code>, it turns that GameObject into something that can be pushed by solid Colliders and notified about triggers.
+            <br><br> A GameObject with only a <code>Collider3D</code> and no <code>CollisionDetector</code> is a static obstacle (or a trigger area), it blocks things but is never itself moved by the collision system. A <code>GameObject</code>
+            with only a <code>CollisionDetector</code> and no <code>Collider3D</code> can be blocked by other things but doesn't block anything itself. Give it both if it needs to do both.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Basic CollisionDetector usage</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//A player pushed around by solid colliders, centered a bit above its feet</span>
+GameObject player = new GameObject("Player");
+CollisionDetector detector = new CollisionDetector(distanceToCheck: 1.5f, offset: new Vector3(0f, 1f, 0f));
+player.AddComponent(detector);
+myScene.AddGameObject(player);
+
+detector.onCollision += col => Logger.Info("Game", $"Bumped into {col.gameObject.name}");
+detector.onTriggerEnter += col => Logger.Info("Game", $"Entered {col.gameObject.name}");
+
+<span class="cm">//Temporarily stop this detector from colliding with anything</span>
+detector.enabled = false;</pre>
+        </div>
+
+        <div class="callout info">
+            <div>Debug gizmos (the center and range spheres drawn when <code>debugDrawCenter</code> or <code>debugDrawDistance</code> are true) still show up for a disabled Detector, even though it no longer participates in any collision checks while <code>enabled</code> is false.</div>
+        </div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Collision Detector specific usages and limits </h2>
+
+        <p>
+            A CollisionDetector has no shape or radius of its own. <code>distanceToCheck</code> only decides how far it reaches to notice a Collider is nearby,
+            it isn't used at all once the <code>CheckCollision</code> actually runs. The point that gets tested and pushed out is exactly <code>detector.position</code>,
+            a single point in space.
+            <br><br> This matters for example for anything with a camera attached. A single <code>CollisionDetector</code> centered on an FPS camera lets its center point sit against a wall, since that one point never
+            technically penetrates it, but the camera's lens and near plane still clip straight through the wall's geometry.
+            A common fix is surrounding the camera with several Detectors instead of one, offset slightly forward, back, left and right, so at least one of them catches the wall and pushes the whole <code>GameObject</code> away before the camera itself gets close enough to clip.
+            <br><br>For complex physics simulations, you can also approximate them with multiple detectors on the same <code>GameObject</code>. For example, to make two cubes collide, you can add one <code>BoxCollider</code> and 8 <code>CollisionDetector</code> (one for every corner) each.
+
+
+        </p>
+
+        <div class="callout warn">
+            <div>Since the <code>ResolveCollisions</code> only pushes objects and don't apply a real torque, the objects will only collide with each other and slide along their faces, not rotate with accurate physics.</div>
+        </div>
+
+        <div class="callout info">
+            <div>Adding more <code>CollisionDetector</code> to the same <code>GameObject</code> has a negligeable cost in performance. The HashSet query is done once per object, not once per detector.</div>
+        </div>
+
+
+
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> DistanceToCheck and Offset </h2>
+
+        <p>
+            <code>distanceToCheck</code> is the maximum distance allowed between this Detector's position and a Collider's actual surface before that Collider gets tested at all. It's checked precisely against each Collider's real shape, not just which grid cell it happens to be in. Set it too small and a Collider only a bit further away than the Detector's own size won't be detected. Set it too large and it will check more Colliders than it needs to every frame.
+            <br><br> <code>offset</code> moves the actual detection point away from the GameObject's Transform position, in local space. Useful to place it at a character's feet for ground checks, or at chest height for wall pushing, rather than dead center of the model.
+        </p>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span class="code-lang">Multiple detectors on one GameObject</span>
+                <button class="copy-btn" onclick="navigator.clipboard.writeText(this.closest('.code-block').querySelector('pre').innerText)">Copier</button>
+            </div>
+            <pre><span class="cm">//A small detector at the feet, for ground checks, and a wider one at chest height for pushing off walls</span>
+CollisionDetector feet = new CollisionDetector(distanceToCheck: 0.3f, offset: new Vector3(0f, 0.1f, 0f));
+CollisionDetector chest = new CollisionDetector(distanceToCheck: 0.6f, offset: new Vector3(0f, 1.2f, 0f));
+
+player.AddComponent(feet);
+player.AddComponent(chest);</pre>
+        </div>
+
+
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Constructors </h2>
+
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Declaration</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">CollisionDetector(float distanceToCheck = 5f, Vector3 offset = default)</span></td>
+                <td>Creates a new CollisionDetector</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <hr class="divider">
+
+        <h2> Properties </h2>
+        <table class="prop-table">
+            <thead>
+            <tr>
+                <th>Property</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><span class="prop-name">enabled</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether this detector participates in collision detection, default true</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">distanceToCheck</span></td>
+                <td><span class="prop-type">float</span></td>
+                <td>How far this detector reaches to find Colliders, both for the broadphase query and the actual check</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">offset</span></td>
+                <td><span class="prop-type">Vector3</span></td>
+                <td>Local space offset of the detection point from the GameObject's Transform position</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">debugDrawCenter</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether to draw a small debug sphere at the detector's position, default true</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">debugDrawDistance</span></td>
+                <td><span class="prop-type">bool</span></td>
+                <td>Whether to draw a debug sphere showing distanceToCheck, default false</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">gameObject</span></td>
+                <td><span class="prop-type">GameObject</span></td>
+                <td>The GameObject this detector is attached to</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">onCollision</span></td>
+                <td><span class="prop-type">Action&lt;Collider3D&gt;</span></td>
+                <td>Fired when a solid Collider pushes this detector out</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">onTriggerEnter</span></td>
+                <td><span class="prop-type">Action&lt;Collider3D&gt;</span></td>
+                <td>Fired the frame this detector enters a trigger Collider</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">onTriggerStay</span></td>
+                <td><span class="prop-type">Action&lt;Collider3D&gt;</span></td>
+                <td>Fired every frame this detector remains inside a trigger Collider</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">onTriggerExit</span></td>
+                <td><span class="prop-type">Action&lt;Collider3D&gt;</span></td>
+                <td>Fired the frame this detector leaves a trigger Collider</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </main>
+</div>
+
+<script src="nav.js"></script>
+</body>
+</html>
