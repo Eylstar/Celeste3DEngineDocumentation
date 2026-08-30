@@ -22,9 +22,11 @@
             <span class="tag"> Static </span>
         </div>
 
+        <div class="callout info">
+            <div>The utility and usage of the <code>EngineCallbacks</code> is covered in the <code>Engine Peristence</code> page more in depth.</div>
+        </div>
+
         <p><code>EngineCallbacks</code> exists to solve one specific problem. Making sure your setup code still runs after a Save and Quit, in cases where you want to mix the Celeste Gameplay and the Engine 3D rendering (for 3D backgrounds for exemple).
-            The <code>EngineEntity</code> being a Lonn Entity, is only placed in a specific room in Lonn. The Entity is persistent, so it follows you through rooms.
-            <code>EngineEntity</code> gets rebuilt following a save and quit, even though the normal way you'd hook into engine loading, <code>EngineEntity.OnEngineLoad</code>, doesn't survive that. This page explains the whole mechanism it's part of, not just the class itself, because none of it makes sense in isolation.
         </p>
 
         <hr class="divider">
@@ -34,7 +36,8 @@
         <p>
             When your <code>EngineEntity</code> is marked persistent, Celeste keeps the same live object alive as the player moves between rooms,
             it's the standard Everest persistence tag, and it works exactly as expected within a single play session.
-            <br><br> A save and quit, or even relaunching Celeste, is a different situation entirely. The whole game process ends, every static field resets, every event subscription is gone with it. Whatever subscribed to <code>OnEngineLoad</code> in the first place usually does it from the constructor of a custom Entity you placed in Lönn, something like this:
+            <br><br> A save and quit, or even relaunching Celeste, is a different situation.
+            Whatever subscribed to <code>OnEngineLoad</code> in the first place usually does it from the constructor of a custom Entity you placed in Lönn, something like this:
         </p>
 
         <div class="code-block">
@@ -49,8 +52,9 @@
         </div>
 
         <p>
-            That constructor only runs when Celeste loads the specific room this Entity was placed in. This is where the room your persistent Engine gets rebuilt in and the room your subscribing Entity lives in can quietly become two different things. The Engine, being persistent, follows the player from room to room in memory, so by the time a save and quit happens, the room recorded to respawn it in is simply wherever the player happened to be standing, not necessarily the room your Entity was placed in. Walking back into that recorded room respawns the Engine correctly, but it doesn't walk you back through your Entity's own room, so its constructor, and the subscription inside it, never runs again. The Engine can rebuild itself because it has that logic built in, your Entity has no equivalent, nothing tells Celeste to place it again outside of normally loading the room it lives in.
-            <br><br> <code>EngineCallbacks</code> exists specifically to give that respawned engine a direct way to call back into your mod, without depending on your Entity, or anything else, being placed again first.
+            That constructor only runs when Celeste loads the specific room this Entity was placed in. The Engine can rebuild itself because it has that logic built in, your Entity has no equivalent,
+            nothing tells Celeste to place it again outside of the room you placed it in.
+            <br><br> <code>EngineCallbacks</code> exists specifically to give that respawned engine a direct way to call back into your mod without depending on your Entity.
         </p>
 
         <hr class="divider">
@@ -58,9 +62,9 @@
         <h2 class="noBorder"> How the Respawn Actually Happens </h2>
 
         <p>
-            Whenever your persistent <code>EngineEntity</code> is removed, leaving the room it lives in while persistent, the Engine records the current map, which room you left from, your model, texture, export, font and audio paths, and marks that map as needing a respawn, into save data that actually survives a save and quit, unlike anything in memory.
-            <br><br> From then on, every time any level loads anywhere in the game, the Engine checks whether the current room matches a room it's waiting to respawn something in. If it does, and no <code>EngineEntity</code> already exists there, it builds a brand new one directly in code, using the saved paths, and adds it to the level itself.
-            <br><br> This only fires for the exact room you left from, not just the same map. Leaving from room B and later walking into room C on the same map won't trigger anything, only walking back into room B will.
+            Whenever your persistent <code>EngineEntity</code> is removed, leaving the room it lives in while persistent,
+            the Engine records the current map, your model, texture, export, font and audio paths, and marks that map as needing a respawn into the saveDataMap.
+            <br><br> If the player re enters the level in which a "needing respawn" was written into the save data, it builds a brand new Engine directly with code, using the saved paths, and adds it to the level itself.
         </p>
 
         <hr class="divider">
@@ -68,22 +72,17 @@
         <h2 class="noBorder"> Registering and Arming a Callback </h2>
 
         <p>
-            Using <code>EngineCallbacks</code> is two separate steps, and mixing them up is the easiest way to end up confused about why it isn't working.
-            <br><br> <code>RegisterCallback(id, callback)</code> maps a string ID to an actual function. This has to happen unconditionally, every single time your mod loads, regardless of which room the player is currently in or whether a respawn is even needed this session. The natural place for it is your own <code>EverestModule.Load()</code>, which always runs once when the mod loads, completely independent of rooms or saves.
-            <br><br> <code>CreateCallbackID(scene, id)</code> is the other half, and it's what actually arms the respawn for a specific map. Call it whenever your engine setup finishes, both the first time it loads normally through <code>OnEngineLoad</code>, and again inside whatever function you registered as a callback. It tells that map's save data which ID to invoke if this engine ever needs to be rebuilt later.
+            <code>RegisterCallback(id, callback)</code> maps a string ID to an actual function. This has to happen unconditionally, every single time your mod loads.
+            The natural place for it is your own <code>EverestModule.Load()</code>, which always runs once when the mod loads, completely independent of rooms or saves.
+            <br><br> <code>CreateCallbackID(scene, id)</code> is the other half, and it's what actually arms the respawn for a specific map.
+            Call it whenever your engine setup finishes, both the first time it loads normally through <code>OnEngineLoad</code>,
+            and again inside whatever function you registered as a callback. It tells that map's save data which ID to invoke if this engine ever needs to be rebuilt later.
         </p>
 
-        <div class="callout info">
-            <div>The ID and the function it points to are kept alive by two completely different mechanisms, which is why this survives a full game close. The ID itself is written into your save file through <code>Celeste3DEngineModuleSaveData</code>, real persistence, it's still there after quitting Celeste entirely. The function it maps to is never saved anywhere, it doesn't need to be, <code>RegisterCallback()</code> rebuilds that mapping identically every time your mod loads, which happens automatically on every game launch, before any level or save file is even touched. The two only need to agree on the same ID when they meet again.</div>
-        </div>
 
         <div class="callout warn">
             <div>The armed flag is consumed the moment a callback actually fires, it doesn't rearm itself. If you want your setup to keep working across more than one save and quit and respawn cycle on the same map, call <code>CreateCallbackID()</code> again inside the callback itself, not just in your original <code>OnEngineLoad</code> handler.</div>
         </div>
-
-        <p>
-            In practice, your <code>EverestModule</code> and whatever builds your 3D scene are usually two different classes, your scene builder is often a custom Entity placed in Lönn, subscribing to <code>OnEngineLoad</code> from its own constructor. <code>RegisterCallback()</code> runs from <code>Load()</code>, at game boot, before any room has ever loaded, so there's no instance of that Entity to call a method on yet, nothing has placed one in a Scene. The function you register has to be reachable without an instance, a <code>static</code> method on your builder class, that <code>Load()</code> can reference directly by name.
-        </p>
 
         <div class="code-block">
             <div class="code-header">
@@ -96,7 +95,7 @@ public class MyMod : EverestModule
     public override void Load()
     {
         <span class="cm">//A static method reference, no instance of MySceneBuilder exists yet</span>
-        EngineCallbacks.RegisterCallback("MyMod.MainScene", MySceneBuilder.OnRespawn);
+        EngineCallbacks.RegisterCallback("MyMod/Eylstar/sceneBuilder", MySceneBuilder.OnRebuild);
     }
 }
 
@@ -129,7 +128,7 @@ public class MySceneBuilder : Entity
         </div>
 
         <div class="callout info">
-            <div>If you have more than one map using this pattern, or more than one distinct setup routine, use a different, stable ID for each. Registration is a single global dictionary shared by the whole mod, not scoped per map, the map specific part lives entirely in what <code>CreateCallbackID()</code> saves.</div>
+            <div>Try sticking to the Mod/Name/map id convention (like the Everest one) to avoid possible duplicates.</div>
         </div>
 
         <hr class="divider">
@@ -153,11 +152,6 @@ public class MySceneBuilder : Entity
                 <td><span class="prop-name">CreateCallbackID(Scene scene, string id)</span></td>
                 <td><span class="prop-type">static void</span></td>
                 <td>Arms the given callback ID to be invoked if this map's Engine needs to respawn later</td>
-            </tr>
-            <tr>
-                <td><span class="prop-name">TryGetCallback(string id, out Action&lt;EngineEntity, Level&gt; callback)</span></td>
-                <td><span class="prop-type">static bool</span></td>
-                <td>Looks up a registered callback by ID, used internally when an Engine respawns</td>
             </tr>
             </tbody>
         </table>
