@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C3DE - HomePage</title>
+    <title>What is Celeste3DEngine</title>
     <base href="/Celeste3DEngineDocumentation/">
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="berry.ico">
@@ -15,7 +15,70 @@
 <div class="layout">
     <aside></aside>
     <main>
-        <h1>Celeste 3D Engine official Documentation</h1>
+        <h1>What is Celeste3DEngine</h1>
+
+        <div class="page-meta">
+            <span class="tag"> Guide </span>
+        </div>
+
+        <p>
+            <code>Celeste3DEngine</code> is a full 3D rendering and gameplay engine, running inside Celeste itself.
+            Models, lighting, shadows, physics, UI, all of it, drawn on top of, behind, or entirely in place of Celeste's own 2D rendering.
+            <br>It's built for modders, everything is done via code, and the API follows a pattern extremely close from Unity's component system.
+            <code>GameObject</code>, <code>Behaviour</code>, <code>Collider3D</code>, if you've touched something like that before, this should feel familiar fast.
+            <br><br> You can basically think of Celeste 3D Engine as "Unity in Celeste".
+        </p>
+
+        <div class="img-block">
+            <img src="Introduction/slender.png" alt="A 3D horror exploration minigame built with the Engine">
+        </div>
+        <div class="img-caption">A short 3D exploration game built entirely with the Engine for the SSC24, running inside Celeste, in pixel art</div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> What It Can Do </h2>
+
+        <p>
+            Models load from both <code>GLTF</code> or <code>OBJ</code>, with skinned animation support for GLTF.
+            <br>Scenes are lit with one directional light and any number of Scene <code>Light</code>, with real time shadows and tunable <code>LightingSettings</code>.
+            <br>Physics comes from a <code>CollisionSystem</code> (box and sphere colliders, collision or trigger events) alongside <code>RayCasts</code>.
+            <br>UI rendering supports two types of <code>UICanvas</code>, screen space HUD or World panels that live directly in the 3D world.
+            <br>The Engine also supports custom fonts, custom audio source with 3D spatialization, and a persistence system that lets a scene survive Celeste room transitions.
+        </p>
+
+        <div class="img-block">
+            <img src="Introduction/world.png" alt="A scene using both foreground and background layers">
+        </div>
+        <div class="img-caption">A 3D overworld scene with a skinned and animated character, fog and realtime shadows, in HD rendering</div>
+
+        <p>If you don't plan on making a fully 3D game, the engine can also be integrated directly into the Celeste rendering, for things like custom decoration or 3D background.</p>
+
+        <div class="img-block">
+            <img src="Introduction/rendering.png" alt="A scene using both foreground and background layers">
+        </div>
+        <div class="img-caption">A simple scene with 3D cubes and spheres looping around the Celeste gameplay, both over and under the Celeste rendering</div>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> What To Watch Out For </h2>
+
+        <p>
+            A few things are worth to know before going in, each with its own dedicated page. Persistence across rooms and across a Save and Quit are two different problems, covered in <code>Engine Persistence</code>.
+            <br>And <code>SpeedrunTool</code>, one of the most commonly installed Celeste mods, can crash the game if your scene isn't set up to be ignored by the save states, covered in full in <code>Prevent Savestate Crashes</code>, worth reading before you ship anything.
+        </p>
+
+        <hr class="divider">
+
+        <h2 class="noBorder"> Where to start </h2>
+
+        <p>
+            The best place to actually start is <code>Your First Project</code>, a full walkthrough that builds a small working scene from nothing, camera, models, physics, UI and all, step by step.
+        </p>
+
+        <div class="img-block">
+            <img src="Introduction/UI.png" alt="A basic scene with a floor, a cube and default lighting">
+        </div>
+        <div class="img-caption">The simple scene you're going to learn how to do in the First Project tutorial</div>
 
     </main>
 </div>
