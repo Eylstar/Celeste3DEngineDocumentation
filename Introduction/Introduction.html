@@ -66,9 +66,10 @@
                 For functions that needs a model name, instead of typing <code>"playerModel"</code> you'll need to type <code>"characters/playerModel"</code> if you place your player's model in a "characters" subfolder.</div>
         </div>
 
-        <p><br><br>Once the folders are set up, you need to reference the Engine in you mod IDE to be able to use its functions. Start by downloading the zip of the <code>Celeste3DEngine</code>, place it like any other mod in your mods folder, and unzip it.
-            (You can delete the .zip version if you don't want them both).
-            <br><br>Once done and once you have set up your own code mod (see the main Celeste discord/<code>Everest</code> wiki if needed) you'll need to add the reference to the <code>Celeste3DEngine.dll</code> found in the unzipped mod (bin folder).
+        <p><br><br>Once the folders are set up, you need to reference the Engine assembly in your IDE to be able to use its functions and properties.
+            Start by downloading the <code>Celeste3DEngine</code> mod, (place it like any other mod in your mods folder if not done via Olympus), and launch the game at least once.
+            <br><br>When done, and once you have set up your own code mod (see the main Celeste discord/<code>Everest</code> wiki if needed) you'll need to add the reference to the <code>Celeste3DEngine.dll</code>.
+            This dll can be found in the zip mod but also directly in the Cache. The Cache is located inside your mods folder and contains all the other mods dlls, Choose the Engine one inside the Cache.
             <br><br>Finally, don't forget to add the engine as a dependency into your own mod <code>everest.yaml</code>, using the latest version.
 
 
