@@ -76,7 +76,7 @@ settings.DirectionalLightDirection = new Vector3(0f, -1f, 0f);</pre>
         <h2 class="noBorder"> Shadows </h2>
 
         <p>
-            The Engine has two separate shadow systems that don't share any settings besides the near plane, bias and strength below. The directional light uses a global shadow map, and each shadow casting <code>ConeLight</code> gets its own individual shadow map. <code>PointLight</code> never casts shadows.
+            The Engine has two separate shadow systems, The directional light uses a global shadow map, and each shadow casting <code>ConeLight</code> gets its own individual shadow map. <code>PointLight</code> never casts shadows.
             <br><br> <b>Directional shadows</b> - The shadows casted by the unique global directional light, toggled with <code>DirectionalLightCastsShadows</code>.
             <code>shadowMapResolution</code> controls the quality of the shadow map. <code>shadowFarPlane</code> stops the shadows for rendering beyond a certain point. You can increase this value to render farther shadows, but as this decrease the texel density
             in the shadow map, the quality will go lower (it's not recommended to go over 4096 for the <code>shadowMapResolution</code>).

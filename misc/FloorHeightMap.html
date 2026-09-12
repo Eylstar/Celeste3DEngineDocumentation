@@ -47,7 +47,8 @@
         </div>
 
         <div class="callout warn">
-            <div>Call <code>BuildHeightmapFromMesh()</code> from <code>Start()</code>, not <code>Added()</code>. A GameObject's <code>MeshRenderer</code> only gets its actual Model built during <code>Start()</code>, calling this any earlier means <code>GetMesh()</code> is still null and you'll get null back. Start order between different GameObjects also isn't guaranteed, so if your terrain and whatever builds the heightmap are on separate GameObjects, the safest place to bake it is in the terrain's own <code>Start()</code>, or somewhere you can be sure the terrain has already started.</div>
+            <div>Call <code>BuildHeightmapFromMesh()</code> after the object's <code>MeshRenderer</code> is created AND added to the <code>GameObject</code>. The <code>Model3D</code> only gets loaded when the renderer is added to the object. Doing this before will
+            result in a null mesh, returning an error.</div>
         </div>
 
         <div class="code-block">

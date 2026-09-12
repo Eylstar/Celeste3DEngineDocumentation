@@ -117,7 +117,8 @@ myScene.AddGameObject(spot);</pre>
         <p>
             A <code>ConeLight</code> shines in a cone shape along its forward direction, like a spotlight or a flashlight. Its constructor only takes a position, so to aim it somewhere you need to set its rotation afterwards, with <code>transform.LookAt()</code> or <code>transform.SetRotation()</code>.
             <br><br> <code>Angle</code> is the full width of the cone, in degrees.<br>
-            <code>SpotFalloff</code>controls how much the light fades out gradually toward the edge of the cone. 0 = no falloff, 1 = full falloff;
+            <code>SpotFalloff</code>controls how much the light fades out gradually toward the edge of the cone. 0 = no falloff, 1 = full falloff.
+            <br><code>ShadowDistanceAttenuation</code>Controls how quickly the shadow's edge softens with distance. 1 = normal, higher values = faster fade, default at 1.5. This is additive with the global shadow softness parameter.
         </p>
 
         <div class="callout info">
@@ -157,6 +158,11 @@ myScene.AddGameObject(spot);</pre>
                 <td><span class="prop-name">SpotFalloff</span></td>
                 <td><span class="prop-type">float</span></td>
                 <td>Controls how gradually the light fades toward the edge of the cone</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">ShadowDistanceAttenuation</span></td>
+                <td><span class="prop-type">float</span></td>
+                <td>Controls how quickly the shadow's edge softens with distance. 1 = normal, higher values = faster fade</td>
             </tr>
             <tr>
                 <td><span class="prop-name">CastsShadows</span></td>

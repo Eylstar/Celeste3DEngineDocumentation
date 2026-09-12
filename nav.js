@@ -3,7 +3,7 @@ const SITE = {
     name:    "Celeste",
     nameAccent: "3D",
     name2: "Engine",
-    version: "v1.1.0",
+    version: "v1.2.0",
     base: ""
 }
 
@@ -15,6 +15,7 @@ const NAV = [
             { label: "Your first Project",   href: "Introduction/Introduction.html" },
             { label: "Engine Persistence",   href: "Introduction/Persistence.html" },
             { label: "Prevent Savestate Crashes",   href: "Introduction/SaveStates.html" },
+            { label: "Blender Add-On",   href: "Introduction/BlenderAddon.html" },
         ]
     },
     {
@@ -79,6 +80,8 @@ const NAV = [
     {
         section: "Misc",
         items: [
+            { label: "JSONPlacements",           href: "misc/JSONPlacements.html" },
+            { label: "WindSettings",           href: "misc/WindSettings.html" },
             { label: "FloorHeightMap",           href: "misc/FloorHeightMap.html" },
             { label: "ExportGenerator",             href: "misc/ExportGenerator.html" },
         ]

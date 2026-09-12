@@ -214,6 +214,11 @@ List&lt;GameObject&gt; movingEnemies = scene.FindAllByType&lt;EnemyMovement&gt;(
             </thead>
             <tbody>
             <tr>
+                <td><span class="prop-name">ElapsedTime</span></td>
+                <td><span class="prop-type">float</span></td>
+                <td>Returns the time the Scene3D has been running (a paused scene doesn't increase the value)</td>
+            </tr>
+            <tr>
                 <td><span class="prop-name">GetRenderingCamera</span></td>
                 <td><span class="prop-type">Camera3D</span></td>
                 <td>Returns the rendering camera of this scene</td>
@@ -227,6 +232,11 @@ List&lt;GameObject&gt; movingEnemies = scene.FindAllByType&lt;EnemyMovement&gt;(
                 <td><span class="prop-name">GetLightingSettings</span></td>
                 <td><span class="prop-type">LightingSettings</span></td>
                 <td>Returns the LightingSettings used in the scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">GetWindSettings</span></td>
+                <td><span class="prop-type">WindSettings</span></td>
+                <td>Returns the WindSettings used in the scene</td>
             </tr>
             <tr>
                 <td><span class="prop-name">GetSkybox</span></td>
@@ -262,6 +272,11 @@ List&lt;GameObject&gt; movingEnemies = scene.FindAllByType&lt;EnemyMovement&gt;(
                 <td><span class="prop-name">SetLightingSettings</span></td>
                 <td><span class="prop-type">void</span></td>
                 <td>Sets the lighting settings for the scene</td>
+            </tr>
+            <tr>
+                <td><span class="prop-name">SetWindSettings</span></td>
+                <td><span class="prop-type">void</span></td>
+                <td>Sets the wind settings for the scene</td>
             </tr>
             <tr>
                 <td><span class="prop-name">SetPause</span></td>
